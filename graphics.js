@@ -10,7 +10,7 @@ const Atm=35000;
 const R=6357000;
 var mode="baloon";
 var data={
-    "height":28000,
+    "height":0,
     "pressure":1,
     "longitude":0,
     "latitude":0,
@@ -21,7 +21,7 @@ var data={
 var sunX=width/4;
 var sunY=height/2-data.sunHeight/aHeight*height;
 function skyColor(angularDistance, airMass,I0=1) {
-    const sigma =1.03;
+    const sigma =1.025;
     const theta = (angularDistance * Math.PI) / 180;
     const wavelengths = {
       red: 700e-9,
@@ -45,24 +45,26 @@ function skyColor(angularDistance, airMass,I0=1) {
 
     return `rgb(${Math.round(red)}, ${Math.round(green)}, ${Math.round(blue)})`;
   }
+  function drawAtmosphere(step=5){
+    for(var x=0;x<width;x+=step){
+      horyzont=Math.acos(R/(R+data['height']))/Math.PI*180;
+      for(var y=0;y<horyzont*height/aHeight+height/2;y+=step){
+          var dist=Math.sqrt((x-sunX)**2+(y-sunY)**2)/width*aWidth;
+          var z=(90-(height/2-y)/height*aHeight)/180*Math.PI;
+          var yAtm=Atm-data["height"];
+          var airmass=R/yAtm*Math.sqrt(Math.cos(z)**2+2*yAtm/R+(yAtm/R)**2)-R/yAtm*Math.cos(z);
+          ctx.fillStyle=skyColor(dist,airmass*(yAtm/Atm));
+          ctx.fillRect(x,y,step,step);
+      }
+      ctx.fillStyle="black";
+      ctx.fillRect(0,horyzont*height/aHeight+height/2,width,height);
+  }
+  }
   var h=7;
   var horyzont=0;
   var v=50;
 setInterval(function(){
-
-for(var x=0;x<width;x+=5){
-    horyzont=Math.acos(R/(R+data['height']))/Math.PI*180;
-    for(var y=0;y<horyzont*height/aHeight+height/2;y+=5){
-        var dist=Math.sqrt((x-sunX)**2+(y-sunY)**2)/width*aWidth;
-        var z=(90-(height/2-y)/height*aHeight)/180*Math.PI;
-        var yAtm=Atm-data["height"];
-        var airmass=R/yAtm*Math.sqrt(Math.cos(z)**2+2*yAtm/R+(yAtm/R)**2)-R/yAtm*Math.cos(z);
-        ctx.fillStyle=skyColor(dist,airmass*(yAtm/Atm));
-        ctx.fillRect(x,y,5,5);
-    }
-    ctx.fillStyle="black";
-    ctx.fillRect(0,horyzont*height/aHeight+height/2,width,height);
-}
+  drawAtmosphere(6);
 h+=0.01;
 //data["height"]+=v;
 if(data["height"]>=Atm-1000 || data["height"]<=0){
