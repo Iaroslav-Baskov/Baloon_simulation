@@ -22,7 +22,7 @@ var data={
 }
 var sunX=width/4;
 var sunY=height/2-data.sunHeight/aHeight*height;
-function skyColor(angularDistance, airMass,I0=1,sigma =1.01) {
+function skyColor(angularDistance, airMass,I0=1,sigma =1.005) {
     const theta = (angularDistance * Math.PI) / 180;
     const wavelengths = {
       red: 700e-9,
@@ -58,17 +58,16 @@ function skyColor(angularDistance, airMass,I0=1,sigma =1.01) {
           var yAtm=Atm-data["height"];
           var airmass=R/yAtm*Math.sqrt(Math.cos(z)**2+2*yAtm/R+(yAtm/R)**2)-R/yAtm*Math.cos(z);
           if(horyzont<sunY){
-            ctx.fillStyle=skyColor(dist,airmass*(yAtm/Atm),1,1.01+0.5*(sunY-horyzont)/height*aHeight/90);
+            ctx.fillStyle=skyColor(dist,airmass*(yAtm/Atm),1,1.005+0.5*(sunY-horyzont)/height*aHeight/90);
           }
           else{
           ctx.fillStyle=skyColor(dist,airmass*(yAtm/Atm));}
           ctx.fillRect(x,y,step,step);
       }
       ctx.fillStyle="black";
-      ctx.fillRect(0,horyzont*height/aHeight+height/2,width,height);
   }
   }
-  function grawBaloon(x,y){
+  function drawBaloon(x,y){
     var dist=0;
     var z=(90-(height/2-y)/height*aHeight)/180*Math.PI;
     var yAtm=Atm-data["height"];
@@ -77,12 +76,12 @@ function skyColor(angularDistance, airMass,I0=1,sigma =1.01) {
     airmass*=yAtm/Atm;
     horyzont=Math.acos(R/(R+data['height']))/Math.PI*180;
     if(horyzont<sunY){
-      gradient.addColorStop(0, skyColor(dist, airmass*0.2+2,1,1.01+0.5*(sunY-horyzont)/height*aHeight/90));
-      gradient.addColorStop(1, skyColor(dist, airmass*0.6+8,1,1.01+0.5*(sunY-horyzont)/height*aHeight/90));
+      gradient.addColorStop(0, skyColor(dist, airmass*0.2+2,1,1.005+0.5*(sunY-horyzont)/height*aHeight/90));
+      gradient.addColorStop(1, skyColor(dist, airmass*0.6+20,1,1.005+0.5*(sunY-horyzont)/height*aHeight/90));
     }
     else{
     gradient.addColorStop(0, skyColor(dist, airmass*0.2+2));
-    gradient.addColorStop(1, skyColor(dist, airmass*0.6+8));}
+    gradient.addColorStop(1, skyColor(dist, airmass*0.6+20));}
     ctx.beginPath();
     ctx.ellipse(x,y,data["startR"]/data["pressure"]**0.333*m,m*data["startR"]/data["pressure"]**0.333*1.2,0, 0, 2 * Math.PI);
     ctx.fillStyle=gradient;
@@ -90,12 +89,17 @@ function skyColor(angularDistance, airMass,I0=1,sigma =1.01) {
     ctx.fill();
     ctx.globalAlpha=1;
   }
-  var h=-5;
+  function drawGround(){
+    horyzont=Math.acos(R/(R+data['height']))/Math.PI*180;
+    ctx.fillRect(0,horyzont*height/aHeight+height/2,width,height);
+  }
+  var h=-1;
   var horyzont=0;
   var v=50;
 setInterval(function(){
   drawAtmosphere(6);
-  grawBaloon(width/2,height/2);
+  drawGround();
+  drawBaloon(width/2,height/3);
 h+=0.01;
 data["height"]+=v;
 data["pressure"]=Math.E**(-data["height"]/8400);
