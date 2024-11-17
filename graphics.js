@@ -60,14 +60,14 @@ function skyColor(angularDistance, airMass,I0=1) {
       ctx.fillRect(0,horyzont*height/aHeight+height/2,width,height);
   }
   }
-  var h=7;
+  var h=-1;
   var horyzont=0;
   var v=50;
 setInterval(function(){
   drawAtmosphere(6);
 h+=0.01;
-//data["height"]+=v;
-if(data["height"]>=Atm-1000 || data["height"]<=0){
+data["height"]+=v;
+if(data["height"]>=Atm-500 || data["height"]<=0){
     v=-v;
     data["height"]+=v;
 }
