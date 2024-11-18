@@ -89,9 +89,7 @@ function skyColor(angularDistance, airMass,I0=1,sigma =1.005) {
     ctx.beginPath();
     ctx.ellipse(x,y,data["startR"]/data["pressure"]**0.333*m,m*data["startR"]/data["pressure"]**0.333*1.2,0, 0, 2 * Math.PI);
     ctx.fillStyle=gradient;
-    ctx.globalAlpha=0.8;
     ctx.fill();
-    ctx.globalAlpha=1;
   }
   function drawGround(){
     horyzont=Math.acos(R/(R+data['height']))/Math.PI*180;
