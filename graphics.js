@@ -52,8 +52,8 @@ function skyColor(angularDistance, airMass,I0=1,sigma =1.005) {
   function drawAtmosphere(step=5){
     horyzont=Math.acos(R/(R+data['height']))/Math.PI*180;
     ctx.fillStyle="black";
-    ctx.fillRect(0,0,width,horyzont*height/aHeight+height/2);
-    var horyzontH=horyzont*height/aHeight+height/2;
+          var horyzontH=horyzont*height/aHeight+height/2;
+    ctx.fillRect(0,0,width,horyzontH);
     for(var x=0;x<width;x+=step){
       for(var y=0;y<height;y+=step){
           var dist=Math.sqrt((x-sunX)**2+(y-sunY)**2)/width*aWidth;
