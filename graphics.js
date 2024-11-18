@@ -59,7 +59,7 @@ function skyColor(angularDistance, airMass,I0=1,sigma =1.005) {
           var z=(90-(height/2-y)/height*aHeight)/180*Math.PI;
           var yAtm=Atm-data["height"];
           var airmass=R/yAtm*Math.sqrt(Math.cos(z)**2+2*yAtm/R+(yAtm/R)**2)-R/yAtm*Math.cos(z);
-          if(y>horyzont*height/aHeight+height/2){
+          if(y>-horyzont*height/aHeight+height/2){
             airmass=data["height"]/Atm/Math.sin((y-height/2)/height*aHeight/180*Math.PI);
             dist=90-sunY/width*aWidth;
           }
