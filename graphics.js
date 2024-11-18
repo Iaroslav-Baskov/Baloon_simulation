@@ -34,7 +34,7 @@ function skyColor(angularDistance, airMass,I0=1,sigma =1.005) {
     const IB=1;
 
     function rayleighScattering(lambda) {
-        var col=1/(Math.pow(lambda, 4)/Math.pow(550e-9, 4))
+        var col=1/(Math.pow(lambda, 4)/Math.pow(wavelengths.red, 4))
       return (
         I0  *2**-((theta/col/airMass*5)**2)/((sigma)**(airMass*col))
       );
