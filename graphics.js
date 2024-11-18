@@ -42,12 +42,12 @@ function skyColor(angularDistance, airMass,I0=1,sigma =1.005) {
     const I_red = rayleighScattering(wavelengths.red);
     const I_green = rayleighScattering(wavelengths.green);
     const I_blue = rayleighScattering(wavelengths.blue);
+    const max=Math.max(I_red,I_green,I_blue);
+    const red = Math.min(255, I_red  * 255)*IR/max;
+    const green = Math.min(255, I_green * 255)*IG/max;
+    const blue = Math.min(255, I_blue * 255)*IB/max;
 
-    const red = Math.min(255, I_red  * 255)*IR;
-    const green = Math.min(255, I_green * 255)*IG;
-    const blue = Math.min(255, I_blue * 255)*IB;
-
-    return `rgb(${Math.round(red)}, ${Math.round(green)}, ${Math.round(blue)})`;
+    return `rgba(${Math.round(red)}, ${Math.round(green)}, ${Math.round(blue), max})`;
   }
   function drawAtmosphere(step=5){
     for(var x=0;x<width;x+=step){
