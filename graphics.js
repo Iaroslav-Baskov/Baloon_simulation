@@ -1,17 +1,19 @@
 var canvas=document.getElementById("image");
 var width = canvas.clientWidth;
 var height = canvas.clientHeight;
+var ground=new Image();
+ground.src="./textures/shumen.png"
 canvas.width=width;
 canvas.height=height;
-var aWidth=60;
-var aHeight=aWidth*height/width;
+var aHeight=30;
+var aWidth=aHeight*width/height;
 const ctx = canvas.getContext("2d");
 const Atm=35000;
 const R=6357000;
-const m=40;
+const m=height/20;
 var mode="baloon";
 var data={
-    "height":0,
+    "height":10,
     "pressure":1,
     "startR":0.9,
     "longitude":0,
@@ -22,8 +24,10 @@ var data={
 }
 var sunX=width/4;
 var sunY=height/2-data.sunHeight/aHeight*height;
-function skyColor(angularDistance, airMass,I0=1,sigma =1.005) {
+function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0) {
     const theta = (angularDistance * Math.PI) / 180;
+    const sigma=1.002;
+    const k2=1e-20;
     const wavelengths = {
       red: 700e-9,
       green: 550e-9,
@@ -34,15 +38,17 @@ function skyColor(angularDistance, airMass,I0=1,sigma =1.005) {
     const IB=1;
 
     function rayleighScattering(lambda) {
-        var col=1/(Math.pow(lambda, 4)/Math.pow(wavelengths.red, 4))
+        var col=1/(Math.pow(lambda, 4)/Math.pow(wavelengths.red, 4));
       return (
-        I0  *2**-((theta/col/airMass*5)**2)/((sigma)**(airMass*col))
+        I0  *k2**((theta/col/airMass)**2)/((sigma)**((additiveAirmass+airMass)*col))
       );
     }
     const I_red = rayleighScattering(wavelengths.red);
     const I_green = rayleighScattering(wavelengths.green);
     const I_blue = rayleighScattering(wavelengths.blue);
-    const max=Math.max(I_red,I_green,I_blue);
+        var col=1/(Math.pow(wavelengths.blue, 4)/Math.pow(wavelengths.red, 4));
+    
+    const max=k2**((theta/airMass/col)**2);
     const red = Math.min(255, I_red  * 255)*IR/max;
     const green = Math.min(255, I_green * 255)*IG/max;
     const blue = Math.min(255, I_blue * 255)*IB/max;
@@ -59,54 +65,86 @@ function skyColor(angularDistance, airMass,I0=1,sigma =1.005) {
           var dist=Math.sqrt((x-sunX)**2+(y-sunY)**2)/width*aWidth;
           var z=(90-(height/2-y)/height*aHeight)/180*Math.PI;
           var yAtm=Atm-data["height"];
-          var airmass=R/yAtm*Math.sqrt(Math.cos(z)**2+2*yAtm/R+(yAtm/R)**2)-R/yAtm*Math.cos(z);
+          var airmass=(R/yAtm*Math.sqrt(Math.cos(z)**2+2*yAtm/R+(yAtm/R)**2)-R/yAtm*Math.cos(z))*(yAtm/Atm);
+          var add=0;
           if(y>horyzontH){
-            airmass=data["height"]/Atm/Math.sin((y-height/2)/height*aHeight/180*Math.PI);
-            dist=90-sunY/width*aWidth;
+            airmass=data['height']/Math.sin((y-height/2)/height*aHeight/180*Math.PI)/Atm;
+            dist=180-dist;
+            if(horyzontH<sunY){
+              airmass+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm)*0.1;
+              add+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm)**2;
+            }
           }
           if(horyzontH<sunY){
-            ctx.fillStyle=skyColor(dist,airmass*(yAtm/Atm),1,1.005+0.5*(-sunY+horyzontH)/height*aHeight/90);
+            add+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm)**2/5;
           }
-          else{
-          ctx.fillStyle=skyColor(dist,airmass*(yAtm/Atm));}
+          ctx.fillStyle=skyColor(dist,airmass,1,add);
           ctx.fillRect(x,y,step,step);
       }
   }
   }
   function drawBaloon(x,y){
-    var dist=0;
-    var z=(90-(height/2-y)/height*aHeight)/180*Math.PI;
-    var yAtm=Atm-data["height"];
-    var airmass=R/yAtm*Math.sqrt(Math.cos(z)**2+2*yAtm/R+(yAtm/R)**2)-R/yAtm*Math.cos(z);
+    var dist=180-Math.sqrt((x-sunX)**2+(y-sunY)**2)/width*aWidth;
+    var add=0;
     const gradient = ctx.createRadialGradient(x, y,0, x, y,m*data["startR"]/data["pressure"]**0.333*1.2);
-    airmass*=yAtm/Atm;
     horyzont=Math.acos(R/(R+data['height']))/Math.PI*180;
     var horyzontH=horyzont*height/aHeight+height/2;
     if(horyzontH<sunY){
-      gradient.addColorStop(0, skyColor(dist, airmass*0.2+2,1,1.005+0.5*(-sunY+horyzontH)/height*aHeight/90));
-      gradient.addColorStop(1, skyColor(dist, airmass*0.6+20,1,1.005+0.5*(-sunY+horyzontH)/height*aHeight/90));
+      add+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm)**2/5;
     }
-    else{
-    gradient.addColorStop(0, skyColor(dist, airmass*0.2+2));
-    gradient.addColorStop(1, skyColor(dist, airmass*0.6+20));}
+    gradient.addColorStop(0, skyColor(dist,30),1,add);
+    gradient.addColorStop(1, skyColor(dist, 40),1,add);
     ctx.beginPath();
     ctx.ellipse(x,y,data["startR"]/data["pressure"]**0.333*m,m*data["startR"]/data["pressure"]**0.333*1.2,0, 0, 2 * Math.PI);
     ctx.fillStyle=gradient;
     ctx.fill();
   }
   function drawGround(){
-    horyzont=Math.acos(R/(R+data['height']))/Math.PI*180;
+    var horyzont=Math.acos(R/(R+data['height']))/Math.PI*180;
+    var horyzontH=horyzont*height/aHeight+height/2;
     ctx.fillStyle="black";
-    ctx.fillRect(0,horyzont*height/aHeight+height/2,width,height);
+    ctx.fillRect(0,horyzontH,width,height);
+    // ctx.fillStyle="#00200a";
+    // imwidth=width/4;//(width+5000)/(data["height"]+5000)*Atm;
+    // imheight=ground.width/ground.height*imwidth;
+    // drawTrapezoid(ctx,ground,0,horyzontH*0,imwidth,horyzontH+imheight,0)
   }
+  function drawTrapezoid(ctx, img, x, y, w, h, factor) {
+
+    var startPoint = x + w * 0.5 * (factor*0.01), // calculate top x
+        xi, yi, scale = img.height / h,           // used for interpolation/scale
+        startLine = y,                            // used for interpolation
+        endLine = y + h;                          // abs. end line (y)
+
+    for(; y < endLine; y++) {
+
+        // get x position based on line (y)
+        xi = interpolate(startPoint, y, x, endLine, (y - startLine) / h);
+
+        // get scaled y position for source image
+        yi = (y * scale + 0.5)|0;
+
+        // draw the slice
+        ctx.drawImage(img, 0, yi, img.width, 1,       // source line
+                           xi.x, y, w - xi.x * 2, 1); // output line
+    }
+
+    // sub-function doing the interpolation        
+    function interpolate(x1, y1, x2, y2, t) {
+        return {
+            x: x1 + (x2 - x1) * t,
+            y: y1 + (y2 - y1) * t
+        };
+    }
+}
   var h=-1;
   var horyzont=0;
-  var v=50;
+  var v=100;
 setInterval(function(){
   drawGround();
   drawAtmosphere(Math.floor(height/100));
   drawBaloon(width/2,height/3);
-h+=0.01;
+h+=0.02;
 data["height"]+=v;
 data["pressure"]=Math.E**(-data["height"]/8400);
 if(data["height"]>=Atm-500 || data["height"]<=0){
@@ -114,4 +152,4 @@ if(data["height"]>=Atm-500 || data["height"]<=0){
     data["height"]+=v;
 }
 data["sunHeight"]=Math.sin(h/24*2*Math.PI)*45;
-sunY=height/2-data["sunHeight"]/aHeight*height;},1);
+sunY=height/2-data["sunHeight"]/aHeight*height;},300);
