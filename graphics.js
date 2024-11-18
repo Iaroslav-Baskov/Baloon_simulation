@@ -47,7 +47,7 @@ function skyColor(angularDistance, airMass,I0=1,sigma =1.005) {
     const green = Math.min(255, I_green * 255)*IG/max;
     const blue = Math.min(255, I_blue * 255)*IB/max;
 
-    return `rgba(${Math.round(red)}, ${Math.round(green)}, ${Math.round(blue)}, ${Math.round(max)})`;
+    return `rgba(${Math.round(red)}, ${Math.round(green)}, ${Math.round(blue)}, ${max})`;
   }
   function drawAtmosphere(step=5){
     horyzont=Math.acos(R/(R+data['height']))/Math.PI*180;
