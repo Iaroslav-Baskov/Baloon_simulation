@@ -61,6 +61,7 @@ function skyColor(angularDistance, airMass,I0=1,sigma =1.005) {
           var airmass=R/yAtm*Math.sqrt(Math.cos(z)**2+2*yAtm/R+(yAtm/R)**2)-R/yAtm*Math.cos(z);
           if(y>horyzont*height/aHeight+height/2){
             airmass=data["height"]/Atm;
+            dist=z;
           }
           if(horyzont*height/aHeight+height/2<sunY){
             ctx.fillStyle=skyColor(dist,airmass*(yAtm/Atm),1,1.005+0.5*(sunY-horyzont*height/aHeight-height/2)/height*aHeight/90);
