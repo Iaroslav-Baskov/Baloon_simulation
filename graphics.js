@@ -53,18 +53,19 @@ function skyColor(angularDistance, airMass,I0=1,sigma =1.005) {
     horyzont=Math.acos(R/(R+data['height']))/Math.PI*180;
     ctx.fillStyle="black";
     ctx.fillRect(0,0,width,horyzont*height/aHeight+height/2);
+    var horyzontH=horyzont*height/aHeight+height/2;
     for(var x=0;x<width;x+=step){
       for(var y=0;y<height;y+=step){
           var dist=Math.sqrt((x-sunX)**2+(y-sunY)**2)/width*aWidth;
           var z=(90-(height/2-y)/height*aHeight)/180*Math.PI;
           var yAtm=Atm-data["height"];
           var airmass=R/yAtm*Math.sqrt(Math.cos(z)**2+2*yAtm/R+(yAtm/R)**2)-R/yAtm*Math.cos(z);
-          if(y>horyzont*height/aHeight+height/2){
+          if(y>horyzontH){
             airmass=data["height"]/Atm/Math.sin((y-height/2)/height*aHeight/180*Math.PI);
             dist=90-sunY/width*aWidth;
           }
-          if(horyzont*height/aHeight+height/2<sunY){
-            ctx.fillStyle=skyColor(dist,airmass*(yAtm/Atm),1,1.005+0.5*(sunY-horyzont*height/aHeight-height/2)/height*aHeight/90);
+          if(horyzontH<sunY){
+            ctx.fillStyle=skyColor(dist,airmass*(yAtm/Atm),1,1.005+0.5*(-sunY+horyzontH)/height*aHeight/90);
           }
           else{
           ctx.fillStyle=skyColor(dist,airmass*(yAtm/Atm));}
@@ -80,9 +81,10 @@ function skyColor(angularDistance, airMass,I0=1,sigma =1.005) {
     const gradient = ctx.createRadialGradient(x, y,0, x, y,m*data["startR"]/data["pressure"]**0.333*1.2);
     airmass*=yAtm/Atm;
     horyzont=Math.acos(R/(R+data['height']))/Math.PI*180;
-    if(horyzont*height/aHeight+height/2<sunY){
-      gradient.addColorStop(0, skyColor(dist, airmass*0.2+2,1,1.005+0.5*(sunY-horyzont*height/aHeight-height/2)/height*aHeight/90));
-      gradient.addColorStop(1, skyColor(dist, airmass*0.6+20,1,1.005+0.5*(sunY-horyzont*height/aHeight-height/2)/height*aHeight/90));
+    var horyzontH=horyzont*height/aHeight+height/2;
+    if(horyzontH<sunY){
+      gradient.addColorStop(0, skyColor(dist, airmass*0.2+2,1,1.005+0.5*(-sunY+horyzontH)/height*aHeight/90));
+      gradient.addColorStop(1, skyColor(dist, airmass*0.6+20,1,1.005+0.5*(-sunY+horyzontH)/height*aHeight/90));
     }
     else{
     gradient.addColorStop(0, skyColor(dist, airmass*0.2+2));
