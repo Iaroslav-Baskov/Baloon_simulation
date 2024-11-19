@@ -24,7 +24,7 @@ var data={
 }
 var sunX=width/4;
 var sunY=height/2-data.sunHeight/aHeight*height;
-function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=0) {
+function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=1e-10000000) {
     const theta = (angularDistance * Math.PI) / 180;
     const sigma=0.998;
     const k2=1e-20;
