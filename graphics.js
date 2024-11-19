@@ -85,15 +85,15 @@ function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0) {
   }
   function drawBaloon(x,y){
     var dist=180-Math.sqrt((x-sunX)**2+(y-sunY)**2)/width*aWidth;
-    var add=0;
+    var add=10;
     const gradient = ctx.createRadialGradient(x, y,0, x, y,m*data["startR"]/data["pressure"]**0.333*1.2);
     horyzont=Math.acos(R/(R+data['height']))/Math.PI*180;
     var horyzontH=horyzont*height/aHeight+height/2;
     if(horyzontH<sunY){
       add+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm)**2/5;
     }
-    gradient.addColorStop(0, skyColor(dist,5),1,add);
-    gradient.addColorStop(1, skyColor(dist, 10),1,add);
+    gradient.addColorStop(0, skyColor(dist,3),1,add);
+    gradient.addColorStop(1, skyColor(dist, 5),1,add);
     ctx.beginPath();
     ctx.ellipse(x,y,data["startR"]/data["pressure"]**0.333*m,m*data["startR"]/data["pressure"]**0.333*1.2,0, 0, 2 * Math.PI);
     ctx.fillStyle=gradient;
