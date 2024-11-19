@@ -38,7 +38,7 @@ function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=0) {
     const IB=1;
 
     function rayleighScattering(lambda) {
-        var col=1/(Math.pow(lambda, 4)/Math.pow(wavelengths.red, 4))**(1-clouds);
+        var col=1/(lambda/wavelengths.red)**((1-clouds)*4);
       return (
         I0  *k2**((theta/col/airMass)**2)/((sigma)**((additiveAirmass+airMass)*col))
       );
@@ -92,8 +92,8 @@ function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=0) {
     if(horyzontH<sunY){
       add+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm)**2/5;
     }
-    gradient.addColorStop(0, skyColor(dist,3),1,add,0.5);
-    gradient.addColorStop(1, skyColor(dist, 5),1,add,0.5);
+    gradient.addColorStop(0, skyColor(dist,5),1,add,0.9);
+    gradient.addColorStop(1, skyColor(dist, 10),1,add,0.9);
     ctx.beginPath();
     ctx.ellipse(x,y,data["startR"]/data["pressure"]**0.333*m,m*data["startR"]/data["pressure"]**0.333*1.2,0, 0, 2 * Math.PI);
     ctx.fillStyle=gradient;
