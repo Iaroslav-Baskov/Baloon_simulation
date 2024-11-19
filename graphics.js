@@ -40,7 +40,7 @@ function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=1) {
     function rayleighScattering(lambda) {
         var col=(wavelengths.red/lambda)**4;
       return (
-        I0  *k2**((theta/col/airMass)**2)*clouds**((theta/airMass)**2)*((sigma)**((additiveAirmass+airMass)*col))
+        I0  *(k2/clouds)**((theta/col/airMass)**2)*clouds**((theta/airMass)**2)*((sigma)**((additiveAirmass+airMass)*col))
       );
     }
     const I_red = rayleighScattering(wavelengths.red);
