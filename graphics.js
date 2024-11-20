@@ -141,7 +141,7 @@ function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=0) {
   var v=100;
 setInterval(function(){
   drawGround();
-  drawAtmosphere(Math.floor(height/500));
+  drawAtmosphere(10);
   drawBaloon(width/2,height/3);
 h+=0.02;
 data["height"]+=v;
