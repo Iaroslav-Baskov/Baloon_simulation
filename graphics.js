@@ -91,7 +91,7 @@ function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=0) {
       add+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm)**2/5;
     }
     gradient.addColorStop(0, skyColor(dist,3,1,add,1));
-    gradient.addColorStop(1, skyColor(dist, 50,1,add,1));
+    gradient.addColorStop(1, skyColor(dist, 20,1,add,1));
     ctx.beginPath();
     ctx.ellipse(x,y,data["startR"]/data["pressure"]**0.333*m,m*data["startR"]/data["pressure"]**0.333*1.2,0, 0, 2 * Math.PI);
     ctx.fillStyle=gradient;
