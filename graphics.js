@@ -60,7 +60,8 @@ function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=0) {
     ctx.fillStyle="black";
     var horyzontH=horyzont*height/aHeight+height/2;
     ctx.fillRect(0,0,width,horyzontH);
-    for(var y=0;y<height;y+=step){
+    var background = ctx.createLinearGradient(0,0, 0,horyzontH);
+    for(var y=0;y<=horyzontH;y+=horyzontH/step){
           var dist=Math.sqrt(sunX**2+(y-sunY)**2)/width*aWidth;
           var z=(90-(height/2-y)/height*aHeight)/180*Math.PI;
           var yAtm=Atm-data["height"];
@@ -77,9 +78,10 @@ function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=0) {
           if(horyzontH<sunY){
             add+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm)**2/5;
           }
-          ctx.fillStyle=skyColor(dist,airmass,1,add);
-          ctx.fillRect(0,y,width,step);
+          background.addColorStop=(y/horyzontH,skyColor(dist,airmass,1,add));
     }
+    ctx.fillStyle=background;
+    ctx.fillRect(0,y,width,horyzontH);
   }
   function drawBaloon(x,y){
     var dist=180-Math.sqrt((x-sunX)**2+(y-sunY)**2)/width*aWidth;
@@ -91,7 +93,7 @@ function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=0) {
       add+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm)**2/5;
     }
     gradient.addColorStop(0, skyColor(dist,3,1,add,1));
-    gradient.addColorStop(1, skyColor(dist, 20,1,add,1));
+    gradient.addColorStop(1, skyColor(dist, 10,1,add,1));
     ctx.beginPath();
     ctx.ellipse(x,y,data["startR"]/data["pressure"]**0.333*m,m*data["startR"]/data["pressure"]**0.333*1.2,0, 0, 2 * Math.PI);
     ctx.fillStyle=gradient;
