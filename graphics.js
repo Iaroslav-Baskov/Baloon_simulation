@@ -115,7 +115,7 @@ function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=0) {
           background.addColorStop((y-horyzontH)/(height-horyzontH),skyColor(dist,airmass,1,add));
     }
     ctx.fillStyle=background;
-    ctx.fillRect(0,0,width,horyzontH);
+    ctx.fillRect(0,horyzontH,width,height);
   }
   function drawTrapezoid(ctx, img, x, y, w, h, factor) {
 
