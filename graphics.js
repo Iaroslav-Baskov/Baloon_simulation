@@ -67,14 +67,6 @@ function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=0) {
           var yAtm=Atm-data["height"];
           var airmass=(R/yAtm*Math.sqrt(Math.cos(z)**2+2*yAtm/R+(yAtm/R)**2)-R/yAtm*Math.cos(z))*(yAtm/Atm);
           var add=0;
-          if(y>horyzontH){
-            airmass=data['height']/Math.sin((y-height/2)/height*aHeight/180*Math.PI)/Atm;
-            dist=180-dist;
-            if(horyzontH<sunY){
-              airmass+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm)*0.1;
-              add+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm)**2;
-            }
-          }
           if(horyzontH<sunY){
             add+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm)**2/5;
           }
@@ -104,10 +96,26 @@ function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=0) {
     var horyzont=Math.acos(R/(R+data['height']))/Math.PI*180;
     var horyzontH=horyzont*height/aHeight+height/2;
     ctx.fillStyle="#00200a";
-    ctx.fillRect(0,horyzontH,width,height);
+    ctx.fillRect(horyzontH,height,width,height);
     // imwidth=width/4;//(width+5000)/(data["height"]+5000)*Atm;
     // imheight=ground.width/ground.height*imwidth;
     // drawTrapezoid(ctx,ground,0,horyzontH*0,imwidth,horyzontH+imheight,0)
+    var background = ctx.createLinearGradient(0,0, 0,horyzontH);
+    for(var y=horyzontH;y<=height;y+=(height-horyzontH)/step){
+          var dist=180-Math.sqrt(sunX**2+(y-sunY)**2)/width*aWidth;
+          var yAtm=Atm-data["height"];
+          var airmass=data['height']/Math.sin((y-height/2)/height*aHeight/180*Math.PI)/Atm;
+          var add=0;
+            if(horyzontH<sunY){
+              airmass+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm)*0.1;
+              add+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm)**2;
+              add+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm)**2/5;
+            }
+        console.log(skyColor(dist,airmass,1,add));
+          background.addColorStop(y/horyzontH,skyColor(dist,airmass,1,add));
+    }
+    ctx.fillStyle=background;
+    ctx.fillRect(0,0,width,horyzontH);
   }
   function drawTrapezoid(ctx, img, x, y, w, h, factor) {
 
