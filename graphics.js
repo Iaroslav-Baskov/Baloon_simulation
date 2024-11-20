@@ -85,8 +85,8 @@ function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=0) {
     if(horyzontH<sunY){
       add+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm)**2/5;
     }
-    gradient.addColorStop(0, skyColor(dist,3,1,add,0.9));
-    gradient.addColorStop(1, skyColor(dist,5,1,add,0.9));
+    gradient.addColorStop(0, skyColor(dist,30,1,add,0.7));
+    gradient.addColorStop(1, skyColor(dist,50,1,add+2,0.7));
     ctx.beginPath();
     ctx.ellipse(x,y,data["startR"]/data["pressure"]**0.333*m,m*data["startR"]/data["pressure"]**0.333*1.2,0, 0, 2 * Math.PI);
     ctx.fillStyle=gradient;
@@ -100,7 +100,7 @@ function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=0) {
     // imwidth=width/4;//(width+5000)/(data["height"]+5000)*Atm;
     // imheight=ground.width/ground.height*imwidth;
     // drawTrapezoid(ctx,ground,0,horyzontH*0,imwidth,horyzontH+imheight,0)
-    var background = ctx.createLinearGradient(0,0, 0,horyzontH);
+    var background = ctx.createLinearGradient(0,horyzontH, 0,height);
     for(var y=horyzontH;y<=height;y+=(height-horyzontH)/step){
           var dist=180-Math.sqrt(sunX**2+(y-sunY)**2)/width*aWidth;
           var yAtm=Atm-data["height"];
@@ -145,12 +145,12 @@ function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=0) {
         };
     }
 }
-  var h=-1;
+  var h=-5;
   var horyzont=0;
   var v=100;
 setInterval(function(){
-  drawGround(10);
-  drawAtmosphere(10);
+  drawAtmosphere(50);
+  drawGround(50);
   drawBaloon(width/2,height/3);
 h+=0.02;
 data["height"]+=v;
