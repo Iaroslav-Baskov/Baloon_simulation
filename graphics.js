@@ -82,7 +82,7 @@ function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=0) {
           background.addColorStop(y/horyzontH,skyColor(dist,airmass,1,add));
     }
     ctx.fillStyle=background;
-    ctx.fillRect(0,y,width,horyzontH);
+    ctx.fillRect(0,0,width,horyzontH);
   }
   function drawBaloon(x,y){
     var dist=180-Math.sqrt((x-sunX)**2+(y-sunY)**2)/width*aWidth;
