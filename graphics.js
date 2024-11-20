@@ -78,7 +78,7 @@ function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=0) {
           if(horyzontH<sunY){
             add+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm)**2/5;
           }
-          background.addColorStop=(y/horyzontH,skyColor(dist,airmass,1,add));
+          background.addColorStop(y/horyzontH,skyColor(dist,airmass,1,add));
     }
     ctx.fillStyle=background;
     ctx.fillRect(0,y,width,horyzontH);
