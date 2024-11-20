@@ -40,13 +40,13 @@ function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=0) {
     function rayleighScattering(lambda) {
         var col=(wavelengths.red/lambda)**4;
       return (
-        I0  *k2**(clouds*(theta/airMass)**2 + (theta/col/airMass)**2*(1-clouds))*((sigma)**((additiveAirmass+airMass)*col))
+        I0  *k2**(clouds*(theta/airMass)**2 + (theta/col/airMass)**2*(1-clouds))*(sigma**((additiveAirmass+airMass)*col))
       );
     }
     const I_red = rayleighScattering(wavelengths.red);
     const I_green = rayleighScattering(wavelengths.green);
     const I_blue = rayleighScattering(wavelengths.blue);
-        var col=1/(Math.pow(wavelengths.blue, 4)/Math.pow(wavelengths.red, 4));
+    var col=1/(Math.pow(wavelengths.blue, 4)/Math.pow(wavelengths.red, 4));
     
     const max=k2**((theta/airMass/col)**2);
     const red = Math.min(255, I_red  * 255)*IR/max;
@@ -83,7 +83,7 @@ function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=0) {
   }
   function drawBaloon(x,y){
     var dist=180-Math.sqrt((x-sunX)**2+(y-sunY)**2)/width*aWidth;
-    var add=10;
+    var add=20;
     const gradient = ctx.createRadialGradient(x, y,0, x, y,m*data["startR"]/data["pressure"]**0.333*1.2);
     horyzont=Math.acos(R/(R+data['height']))/Math.PI*180;
     var horyzontH=horyzont*height/aHeight+height/2;
@@ -91,7 +91,7 @@ function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=0) {
       add+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm)**2/5;
     }
     gradient.addColorStop(0, skyColor(dist,3,1,add,1));
-    gradient.addColorStop(1, skyColor(dist, 20,1,add,1));
+    gradient.addColorStop(1, skyColor(dist, 50,1,add,1));
     ctx.beginPath();
     ctx.ellipse(x,y,data["startR"]/data["pressure"]**0.333*m,m*data["startR"]/data["pressure"]**0.333*1.2,0, 0, 2 * Math.PI);
     ctx.fillStyle=gradient;
