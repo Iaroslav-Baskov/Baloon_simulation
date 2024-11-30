@@ -157,19 +157,19 @@ function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=0) {
 }
   var h=-2;
   var horyzont=0;
-  var v=50;
+  var v=20;
 setInterval(function(){
   console.log(skyColor(162.48084372431885,0.12033717497445673,1,1.3727566025585753));
   drawAtmosphere(50);
   drawGround(50);
   drawBaloon(width/2,height/3);
-h+=0.005;
+h+=0.003;
 data["height"]+=v;
 data["pressure"]=Math.E**(-data["height"]/8400);
 if(data["height"]>=Atm-500){// || data["height"]<=0){
   data["height"]=10;
   data["pressure"]=Math.E**(-data["height"]/8400);
-  h=-2;
+  h=Math.random()*-2;
     //v=-v;
     //data["height"]+=v;
 }
