@@ -166,8 +166,9 @@ setInterval(function(){
 h+=0.005;
 data["height"]+=v;
 data["pressure"]=Math.E**(-data["height"]/8400);
-if(data["height"]>=Atm-500 || data["height"]<=0){
+if(data["height"]>=Atm-500){// || data["height"]<=0){
   h=-2;
+  data["height"]=10;
   v=50;
     //v=-v;
     //data["height"]+=v;
