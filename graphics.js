@@ -163,12 +163,14 @@ setInterval(function(){
   drawAtmosphere(50);
   drawGround(50);
   drawBaloon(width/2,height/3);
-h+=0.01;
+h+=0.005;
 data["height"]+=v;
 data["pressure"]=Math.E**(-data["height"]/8400);
 if(data["height"]>=Atm-500 || data["height"]<=0){
-    v=-v;
-    data["height"]+=v;
+  h=-2;
+  v=50;
+    //v=-v;
+    //data["height"]+=v;
 }
 data["sunHeight"]=Math.sin(h/24*2*Math.PI)*45;
 sunY=height/2-data["sunHeight"]/aHeight*height;},50);
