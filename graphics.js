@@ -105,7 +105,7 @@ function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=0) {
     var horyzont=Math.acos(R/(R+data['height']))/Math.PI*180;
     var horyzontH=horyzont*height/aHeight+height/2;
     ctx.fillStyle="#00200a";
-    ctx.fillRect(horyzontH,height,width,height);
+    ctx.fillRect(0,horyzontH,width,height);
     // imwidth=width/4;//(width+5000)/(data["height"]+5000)*Atm;
     // imheight=ground.width/ground.height*imwidth;
     // drawTrapezoid(ctx,ground,0,horyzontH*0,imwidth,horyzontH+imheight,0)
@@ -169,6 +169,9 @@ data["pressure"]=Math.E**(-data["height"]/8400);
 if(data["height"]>=Atm-500){// || data["height"]<=0){
   data["height"]=10;
   data["pressure"]=Math.E**(-data["height"]/8400);
+  h=-2;
+    //v=-v;
+    //data["height"]+=v;
 }
 data["sunHeight"]=Math.sin(h/24*2*Math.PI)*45;
 sunY=height/2-data["sunHeight"]/aHeight*height;},50);
