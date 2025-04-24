@@ -1,8 +1,14 @@
 var canvas=document.getElementById("image");
 var width = canvas.clientWidth;
 var height = canvas.clientHeight;
-var ground=new Image();
-ground.src="./textures/shumen.png"
+var sky=new Image();
+sky.src="./textures/sky.png"
+var boxFront=new Image();
+boxFront.src="./textures/Back.png"
+var terrain=[];
+for(var i=0;i<5;i++){
+terrain[i]=new Image();
+terrain[i].src="./textures/terrain"+i+".png"}
 canvas.width=width;
 canvas.height=height;
 var aHeight=30;
@@ -13,7 +19,7 @@ const R=6357000;
 const m=height/20;
 var mode="baloon";
 var data={
-    "height":10,
+    "altitude":10,
     "pressure":1,
     "startR":0.9,
     "longitude":0,
@@ -24,7 +30,7 @@ var data={
 }
 var sunX=width/4;
 var sunY=height/2-data.sunHeight/aHeight*height;
-function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=0) {
+function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,clouds=0) {
     const theta = (angularDistance * Math.PI) / 180;
     const sigma=0.998;
     const k2=1e-20;
@@ -33,14 +39,14 @@ function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=0) {
       green: 550e-9,
       blue: 450e-9,
     };
-    const IR=0.8;
-    const IG=1;
-    const IB=1;
+    const IR=0.8*Ir0;
+    const IG=1*Ig0;
+    const IB=1*Ib0;
 
     function rayleighScattering(lambda) {
         var col=(wavelengths.red/lambda)**4;
       return (
-        I0  *k2**(clouds*(theta/airMass)**2 + (theta/col/airMass)**2*(1-clouds))*(sigma**((additiveAirmass+airMass)*col))
+        k2**(clouds*(theta/airMass)**2 + (theta/col/airMass)**2*(1-clouds))*(sigma**((additiveAirmass+airMass)*col))
       );
     }
     const I_red = rayleighScattering(wavelengths.red);
@@ -55,123 +61,52 @@ function skyColor(angularDistance, airMass,I0=1,additiveAirmass=0,clouds=0) {
 
     return `rgba(${Math.round(red)}, ${Math.round(green)}, ${Math.round(blue)}, ${max})`;
   }
-  function drawAtmosphere(step=5){
-    horyzont=Math.acos(R/(R+data['height']))/Math.PI*180;
-    ctx.fillStyle="black";
-    var horyzontH=horyzont*height/aHeight+height/2;
-    ctx.fillRect(0,0,width,horyzontH);
-    var background = ctx.createLinearGradient(0,0, 0,horyzontH);
-    for(var y=0;y<=horyzontH;y+=horyzontH/step){
+  function drawAtmosphere(ctx,altitude,minH,maxH,Add, step=10){
+    var background = ctx.createLinearGradient(0,minH, 0,maxH);
+    for(var y=minH;y<=maxH;y+=(maxH-minH)/step){
           var dist=Math.sqrt(sunX**2+(y-sunY)**2)/width*aWidth;
           var z=(90-(height/2-y)/height*aHeight)/180*Math.PI;
-          var yAtm=Atm-data["height"];
+          var yAtm=Atm-altitude;
           var airmass=(R/yAtm*Math.sqrt(Math.cos(z)**2+2*yAtm/R+(yAtm/R)**2)-R/yAtm*Math.cos(z))*(yAtm/Atm);
-          var add=0;
-          if(horyzontH<sunY){
-            add+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm)**2/5;
-          }
-          background.addColorStop(y/horyzontH,skyColor(dist,airmass,1,add));
+          var add=Add;
+          background.addColorStop((y-minH)/(maxH-minH),skyColor(dist,airmass,1,1,1,add));
     }
     ctx.fillStyle=background;
-    ctx.fillRect(0,0,width,horyzontH);
+    ctx.fillRect(0,minH,width, maxH);
   }
-  function drawBaloon(x,y){
-    var dist=180-Math.sqrt((x-sunX)**2+(y-sunY)**2)/width*aWidth;
-    var add=0;
-    const gradient = ctx.createRadialGradient(x, y,0, x, y,m*data["startR"]/data["pressure"]**0.333*1.2);
-    horyzont=Math.acos(R/(R+data['height']))/Math.PI*180;
-    var horyzontH=horyzont*height/aHeight+height/2;
-    if(horyzontH<sunY){
-      add+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm)**2/5;
-    }
-    gradient.addColorStop(0, skyColor(dist,30,1,add,0.1));
-    gradient.addColorStop(1, skyColor(dist,40,1,add+10,0.1));
-    ctx.beginPath();
-    ctx.ellipse(x,y,data["startR"]/data["pressure"]**0.333*m,m*data["startR"]/data["pressure"]**0.333*1.2,0, 0, 2 * Math.PI);
-    ctx.fillStyle=gradient;
-    ctx.fill();
-    ctx.strokeStyle=skyColor(dist,1000,1,add);
-    ctx.lineWidth=0.01*m;
-    ctx.beginPath();
-    var a=0.2*m;
-    var l=2*m;
-    ctx.moveTo(x,y+m*data["startR"]/data["pressure"]**0.333*1.2);
-    ctx.lineTo(x,y+m*data["startR"]/data["pressure"]**0.333*1.2+l);
-    ctx.stroke();
-    ctx.fillStyle="black";
-    ctx.fillRect(x-a/2,y+m*data["startR"]/data["pressure"]**0.333*1.2+l-a/2,a,a);
+  function drawBox(ctx,image, x,y,wid=300,angle=0){
+    ctx.drawImage(image,x-wid/2,y-image.height/image.width*wid/2,wid,image.height/image.width*wid);
   }
-  function drawGround(step=5){
-    var horyzont=Math.acos(R/(R+data['height']))/Math.PI*180;
-    var horyzontH=horyzont*height/aHeight+height/2;
-    ctx.fillStyle="#00200a";
-    ctx.fillRect(0,horyzontH,width,height);
-    // imwidth=width/4;//(width+5000)/(data["height"]+5000)*Atm;
-    // imheight=ground.width/ground.height*imwidth;
-    // drawTrapezoid(ctx,ground,0,horyzontH*0,imwidth,horyzontH+imheight,0)
-    var background = ctx.createLinearGradient(0,horyzontH, 0,height);
-    for(var y=horyzontH;y<=height;y+=(height-horyzontH)/step){
-          var dist=180-Math.sqrt(sunX**2+(y-sunY)**2)/width*aWidth;
-          var airmass=data['height']/Math.sin((y-height/2)/height*aHeight/180*Math.PI)/Atm;
-          var add=0;
-            if(horyzontH<sunY){
-              airmass+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm)*0.1;
-              add+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm)**2;
-            }
-        console.log(dist);
-        console.log(airmass);
-        console.log(add);
-        console.log(skyColor(dist,airmass,1,add));
-          background.addColorStop((y-horyzontH)/(height-horyzontH),skyColor(dist,airmass,1,add));
-    }
-    ctx.fillStyle=background;
-    ctx.fillRect(0,horyzontH,width,height);
-  }
-  function drawTrapezoid(ctx, img, x, y, w, h, factor) {
-
-    var startPoint = x + w * 0.5 * (factor*0.01), // calculate top x
-        xi, yi, scale = img.height / h,           // used for interpolation/scale
-        startLine = y,                            // used for interpolation
-        endLine = y + h;                          // abs. end line (y)
-
-    for(; y < endLine; y++) {
-
-        // get x position based on line (y)
-        xi = interpolate(startPoint, y, x, endLine, (y - startLine) / h);
-
-        // get scaled y position for source image
-        yi = (y * scale + 0.5)|0;
-
-        // draw the slice
-        ctx.drawImage(img, 0, yi, img.width, 1,       // source line
-                           xi.x, y, w - xi.x * 2, 1); // output line
-    }
-
-    // sub-function doing the interpolation        
-    function interpolate(x1, y1, x2, y2, t) {
-        return {
-            x: x1 + (x2 - x1) * t,
-            y: y1 + (y2 - y1) * t
-        };
-    }
-}
   var h=-2;
   var horyzont=0;
-  var v=20;
+  var v=500;
 setInterval(function(){
-  console.log(skyColor(162.48084372431885,0.12033717497445673,1,1.3727566025585753));
-  drawAtmosphere(50);
-  drawGround(50);
-  drawBaloon(width/2,height/3);
-h+=0.003;
-data["height"]+=v;
-data["pressure"]=Math.E**(-data["height"]/8400);
-if(data["height"]>=Atm-500){// || data["height"]<=0){
-  data["height"]=10;
-  data["pressure"]=Math.E**(-data["height"]/8400);
+
+  horyzont=Math.acos(R/(R+data["altitude"]))/Math.PI*180;
+  var horyzontH=Math.floor(horyzont*height/aHeight+height/2);
+  ctx.drawImage(sky,0,0,width,sky.height/sky.width*width);
+  var add=0;
+  horyzontH=Math.floor(horyzontH);
+  if(horyzontH<sunY){
+    add+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm);
+  }
+  drawAtmosphere(ctx,data["altitude"],0,height, add);
+  for(var i=0;i<terrain.length;i++){
+  var d=300000/(i+0.5);
+  var horyzont=Math.atan(data["altitude"]/d)/Math.PI*180;
+  var horyzontH=Math.floor(horyzont*height/aHeight+height/2);
+  ctx.drawImage(terrain[i],0,horyzontH-width/10,width,terrain[i].height/terrain[i].width*width);}
+  drawBox(ctx,boxFront,width/2,height/2);
+
+h+=0.01;
+data["altitude"]+=v;
+data["pressure"]=Math.E**(-data["altitude"]/8400);
+if(data["altitude"]>=Atm-500){// || data["altitude"]<=0){
+  data["altitude"]=10;
+  data["pressure"]=Math.E**(-data["altitude"]/8400);
   h=Math.random()*-2;
     //v=-v;
-    //data["height"]+=v;
+    //data["altitude"]+=v;k
 }
 data["sunHeight"]=Math.sin(h/24*2*Math.PI)*45;
-sunY=height/2-data["sunHeight"]/aHeight*height;},50);
+sunY=height/2-data["sunHeight"]/aHeight*height;},500);
