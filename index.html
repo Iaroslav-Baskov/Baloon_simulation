@@ -1,6 +1,16 @@
 <!DOCTYPE html>
 <head>
     <style>
+        :root {
+  --altitude:10000;
+  --font:4.5vw;
+}
+        body *{
+            
+            font-family: 'myFont'!important;
+            color: red;
+            text-decoration: none;
+        }
         canvas{
             position:absolute;
             left:0;
@@ -10,10 +20,115 @@
             height: 100%;
             
         }
+        .menu{
+            text-align: center;
+            flex-direction:row;
+            left:0;
+            top:0;
+            position:absolute;
+            width:40vw;
+            font-size: var(--font);
+            flex-direction:column;
+            display:flex;
+            background-color: black;
+            border-bottom: red solid 1px;
+        }
+        .menu a{
+            cursor:pointer;
+            border-top: red solid 1px;
+        }
+        .menu *{      
+            margin:0;     
+            display:block;
+            padding: calc(var(--font) / 4);
+        }
+
+        .altitudeContainer{
+            background-color: black;
+            width:1vh;
+            height:60vh;
+            position: absolute;
+            bottom:5vh;
+            left: 1vh;
+
+        }
+        .marker{
+            left:2vh;
+            position:absolute;
+            display:flex;
+            font-size: var(--font);
+        }
+        .marker::before{
+            display:inline-block;
+            content: " ";
+            width:0px;
+            height: 0px;
+            border:calc(var(--font) / 2) solid transparent;
+            margin-right: calc(var(--font) / 4);
+        }
+        .alt::before{
+            border-right:calc(var(--font) / 2) solid red;
+        }
+        .zero::before{
+            border-bottom:calc(var(--font) / 2) solid red;
+        }
+        .max::before{
+            border-top:calc(var(--font) / 2) solid red;
+        }
+        .zero{
+            bottom:0;
+        }
+        .max{
+            bottom:40vh;
+        }
+        .alt{
+            bottom:calc(40vh / 30000 * var(--altitude));
+        }
+        @media (orientation: landscape) {
+            :root {
+  --font:min(16px,1.5vw);
+}
+            .menu{
+                overflow:hidden;
+                text-align: left;
+                font-size: var(--font);
+                border:0;
+                width:calc(100vw);
+    flex-direction:row;
+  }
+       .menu a{
+            border:0;
+            border-right: red solid 1px;
+            padding-right: var(--font);
+            padding-left: var(--font);
+        }
+}
+        @font-face {
+  font-family: "myFont";
+  src: url("VCR_OSD_MONO_1.001.ttf");
+}
     </style>
+    <script type="text/javascript">
+
+    </script>
 </head>
 <body style="margin: 0;padding: 0;">
     <canvas id="image"></canvas>
+    <div class="menu">
+        <p>Aurora data: </p>
+        <a href="">temperature</a>
+        <a href="">pressure</a>
+        <a href="">altitude</a>
+        <a href="">humidity</a>
+        <a href="">dist particles</a>
+        <a href="">raw data file</a>
+        <a href="">about labcoin</a>
+    </div>
+    <div class="altitudeContainer">
+        <div class="zero marker">0m</div>
+        <div class="max marker">30000m</div>
+        <div class="alt marker" id="marker">0m</div>
+    </div>
 </body>
 <script src="graphics.js">
 
