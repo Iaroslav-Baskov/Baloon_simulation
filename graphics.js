@@ -16,6 +16,9 @@ aWidth=aHeight*width/height;}else{
   aWidth=maxA;
   aHeight=aWidth/width*height;
 }
+var roll;
+var pitch;
+var yaw;
 var root = document.querySelector(':root');
 var marker=document.getElementById('marker');
 const ctx = canvas.getContext("2d");
@@ -44,6 +47,7 @@ terrain[i]=new Image();
 terrain[i].src="./textures/terrain"+i+".png"}
 var sunX=width/4;
 var sunY=0;
+var noDataEvent;
 function makeNoise(context) {
   var imgd = context.createImageData(canvas.width, canvas.height);
   var pix = imgd.data;
@@ -128,13 +132,14 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
     }
     drawAtmosphere(ctx,data["altitude"],0,height, add);
     root.style.setProperty('--altitude', data.altitude);
+    root.style.setProperty('--yaw', yaw/Math.PI*180);
     marker.innerText=Math.floor(data.altitude)+"m";
     for(var i=0;i<terrain.length;i+=1/64){
     var d=dmax*(terrain.length-i)/terrain.length;
     if(i%1==0){
     var horyzont2=Math.atan(data["altitude"]/d)/Math.PI*180;
     var horyzontH2=Math.floor(horyzont2*height/aHeight+height/2);
-    var imwidth=width/aWidth*maxA*(d**2+Atm**2)**0.5/(d**2+(data.altitude-1000)**2)**0.5
+    var imwidth=width/aWidth*maxA*(d**2+Atm**2)**0.5/(d**2+(data.altitude-1500)**2)**0.5
     ctx.drawImage(terrain[i],width/2-imwidth/2,horyzontH2,imwidth,terrain[i].height/terrain[i].width*imwidth);}
     var horyzont2=Math.atan((data["altitude"]-cloudAltitude)/d)/Math.PI*180;
     var horyzontH2=Math.floor(horyzont2*height/aHeight+height/2);
@@ -154,7 +159,7 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
     async function update(){
         const url = "https://confine.kolevi.net/aurora/data.txt";
         try {
-            const response = await fetch(url);
+            const response = await fetch(url,{cache:"no-store"});
             if (!response.ok) {
                 throw new Error(`Response status: ${response.status}`);
             }
@@ -181,11 +186,17 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
                 }
 
             }
+            clearTimeout(noDataEvent);
             clearInterval(noise);
+            noDataEvent=setTimeout(function(){
+              noise=setInterval(() => {
+                makeNoise(ctx);
+              }, 50);
+            },5000);
+            yaw=Math.atan2(data.magy,data.magx)+Math.PI ;
             var a=Math.sin(data.time/1000/3600/24%1*2*Math.PI-Math.PI/2);
             sunY=height/2-45*a/aHeight*height;
             drawWorld();
-            //document.getElementById("data").innerHTML = JSON.stringify(data, null, 4).replace(/\n/g, "<br>").replace(/ /g, "&nbsp;");
         } catch (error) {
             console.error(error.message);
         }
