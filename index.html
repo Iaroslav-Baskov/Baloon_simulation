@@ -3,7 +3,10 @@
     <style>
         :root {
   --altitude:10000;
-  --font:4.5vw;
+  --font:3vw;
+  --yaw:0;
+  --roll:10;
+  --pitch:-5;
 }
         body *{
             
@@ -12,7 +15,7 @@
             text-decoration: none;
         }
         canvas{
-            position:absolute;
+            position: fixed;
             left:0;
             top:0;
             z-index:-1;
@@ -25,7 +28,7 @@
             flex-direction:row;
             left:0;
             top:0;
-            position:absolute;
+            position: fixed;
             width:40vw;
             font-size: var(--font);
             flex-direction:column;
@@ -84,17 +87,35 @@
         .alt{
             bottom:calc(40vh / 30000 * var(--altitude));
         }
+        .angle{
+            position: fixed;
+            display: inline-block;
+            background: url("textures/azimuth.png") calc(var(--font) * 16); 
+            background-position: center;
+            background-size: cover;
+            transform: translate(50%,-50%); /*rotate(calc(var(--yaw) * 1deg)); */
+            width: calc(var(--font) * 12);
+            height: calc(var(--font) * 12);
+            right:calc(var(--font) * 6);
+            z-index: 3;
+        }
+        .angle div{
+            position: absolute;
+            display: inline-block;
+            width: calc(var(--font) * 12);
+            top:50%;
+            right:50%;
+        }
+
         @media (orientation: landscape) {
             :root {
-  --font:min(16px,1.5vw);
+  --font:min(16px,1.5vw, 3vh);
 }
             .menu{
-                overflow:hidden;
                 text-align: left;
-                font-size: var(--font);
                 border:0;
                 width:calc(100vw);
-    flex-direction:row;
+                flex-direction:row;
   }
        .menu a{
             border:0;
@@ -129,6 +150,9 @@
         <div class="max marker">30000m</div>
         <div class="alt marker" id="marker">0m</div>
     </div>
+    <div class="angle"  style="top: calc(var(--font) * 7)"><div style='content: url("textures/redUp.png");transform: translate(50%,-50%) rotate(calc(var(--yaw) * 1deg));'></div></div>
+    <div class="angle"  style="top: calc(var(--font) * 17)"><div style='content: url("textures/redFront.png");transform: translate(50%,-50%) rotate(calc(var(--pitch) * 1deg));'></div></div>
+    <div class="angle"  style="top: calc(var(--font) * 27)"><div style='content: url("textures/redSide.png");transform: translate(50%,-50%) rotate(calc(var(--roll) * 1deg));'></div></div>
 </body>
 <script src="graphics.js">
 
