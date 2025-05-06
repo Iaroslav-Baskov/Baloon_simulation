@@ -22,7 +22,7 @@ var yaw;
 var root = document.querySelector(':root');
 var marker=document.getElementById('marker');
 const ctx = canvas.getContext("2d");
-const Atm=70000;
+const Atm=40000;
 const R=6357000;
 const m=height/aHeight*50;
 var mode="baloon";
@@ -131,8 +131,11 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
       add+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm);
     }
     drawAtmosphere(ctx,data["altitude"],0,height, add);
+
     root.style.setProperty('--altitude', data.altitude);
     root.style.setProperty('--yaw', yaw/Math.PI*180);
+    root.style.setProperty('--roll', roll/Math.PI*180);
+    root.style.setProperty('--pitch', pitch/Math.PI*180);
     marker.innerText=Math.floor(data.altitude)+"m";
     for(var i=0;i<terrain.length;i+=1/64){
     var d=dmax*(terrain.length-i)/terrain.length;
@@ -153,55 +156,43 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
   
   }
   
+
+
   terrain[terrain.length-1].onload=function(){
 
-    var index = 0;
-    async function update(){
-        const url = "https://confine.kolevi.net/aurora/data.txt";
-        try {
-            const response = await fetch(url,{cache:"no-store"});
-            if (!response.ok) {
-                throw new Error(`Response status: ${response.status}`);
-            }
-            
-            const json = await response.json();
-            console.log(json);
-            // vinagi shte ima pone edin element..
-
-            // ako nqma novi elementi da izleze
-            // (index e posledno gledaniq element)
-            if(json[index] && !json[index+1]) {
-                console.log("no new data");
-                return;
-            }
-
-            // tuk se updateva data[i]
-            for(var i in json) {
-                if(i <= index) continue;
-                console.log("updating "+i);
-                index = parseInt(i); //ne razbiram zashto i e string kato indexite sa intove??
-                var d = json[i];
-                for(var j in d) {
-                    data[j] = d[j];
-                }
-
-            }
-            clearTimeout(noDataEvent);
-            clearInterval(noise);
-            noDataEvent=setTimeout(function(){
-              noise=setInterval(() => {
-                makeNoise(ctx);
-              }, 50);
-            },5000);
-            yaw=Math.atan2(data.magy,data.magx)+Math.PI ;
-            var a=Math.sin(data.time/1000/3600/24%1*2*Math.PI-Math.PI/2);
-            sunY=height/2-45*a/aHeight*height;
-            drawWorld();
-        } catch (error) {
-            console.error(error.message);
-        }
 
 
-    }
+    const socket = new WebSocket("wss://confine.kolevi.net/ws");
 
-    setInterval(update, 100);}
+    // Connection opened
+    socket.addEventListener("open", (event) => {
+      console.log("Connected");
+      socket.send("listen");
+      socket.addEventListener("message", (event) => {
+  			console.log(event.data);
+        update(JSON.parse(event.data));
+    });
+  });}
+	function update(json){
+	    //tuk promenlivata json e samo nai noviq element
+   
+        for(var i in json) {
+        	data[i] = json[i];}
+          clearTimeout(noDataEvent);
+          clearInterval(noise);
+          noDataEvent=setTimeout(function(){
+            noise=setInterval(() => {
+              makeNoise(ctx);
+            }, 50);
+          },5000);
+          yaw=Math.atan2(data.magy,data.magx)+Math.PI ;
+          roll=Math.atan2(-data.ayG,data.azG);
+          pitch=Math.atan2(data.axG,data.azG);
+          var a=Math.sin(data.time/1000/3600/24%1*2*Math.PI-Math.PI/2);
+          sunY=height/2-45*a/aHeight*height;
+          drawWorld();
+        //document.getElementById("data").innerHTML = JSON.stringify(data, null, 4).replace(/\n/g, "<br>").replace(/ /g, "&nbsp;");
+	}
+
+
+
