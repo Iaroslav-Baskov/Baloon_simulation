@@ -191,7 +191,7 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
           var a=Math.sin(data.time/1000/3600/24%1*2*Math.PI-Math.PI/2);
           sunY=height/2-45*a/aHeight*height;
           drawWorld();
-        //document.getElementById("data").innerHTML = JSON.stringify(data, null, 4).replace(/\n/g, "<br>").replace(/ /g, "&nbsp;");
+       
 	}
 
 
