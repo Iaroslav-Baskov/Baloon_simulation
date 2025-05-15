@@ -2,8 +2,8 @@ const canvas=document.getElementById("image");
 const width = canvas.clientWidth;
 const height = canvas.clientHeight;
 var terrain=[];
-var cloudThickness=3000;
-var cloudAltitude=8000;
+var cloudThickness=1000;
+var cloudAltitude=[2000,8000,16000];
 canvas.width=width;
 canvas.height=height;
 const maxA=90;
@@ -24,9 +24,12 @@ var marker=document.getElementById('marker');
 const ctx = canvas.getContext("2d");
 const Atm=40000;
 const R=6357000;
-const m=height/aHeight*50;
+const m=height/aHeight*15;
 var mode="baloon";
+    var dmax=200000;
 var data={
+  altitude:25000,
+  time:6500000000,
 }
 var noiseTime = 0;
 var noise=setInterval(() => {
@@ -40,8 +43,14 @@ var fog=new Image();
 fog.src="./textures/fog.png"
 var boxFront=new Image();
 boxFront.src="./textures/Back.png"
+var baloon=new Image();
+baloon.src="./textures/baloon.png"
+var cum=new Image();
+cum.src="./textures/cum.png"
 var clouds=new Image();
 clouds.src="./textures/clouds.png"
+var grid=new Image();
+grid.src="./textures/grid.png"
 for(var i=0;i<5;i++){
 terrain[i]=new Image();
 terrain[i].src="./textures/terrain"+i+".png"}
@@ -60,12 +69,24 @@ function makeNoise(context) {
 
   context.putImageData(imgd, 0, 0);
   noiseTime  = (noiseTime  + 1) % canvas.height;
-  ctx.font = Math.floor(0.1*m)+"px myFont";
+  ctx.font = Math.floor(1/aWidth*width*5)+"px myFont";
   ctx.fillStyle="red";
   ctx.textBaseline = "middle";
   ctx.textAlign = "center";
-  ctx.fillText("waiting", width/2,height/2-0.05*m);
-  ctx.fillText("for data", width/2,height/2+0.05*m);
+  ctx.fillText("waiting", width/2,height/2-0.5/aWidth*width*5);
+  ctx.fillText("for data", width/2,height/2+0.5/aWidth*width*5);
+  if(noiseTime%1000==0){
+    socket = new WebSocket("wss://confine.kolevi.net/ws");
+    socket.addEventListener("open", (event) => {
+      console.log("Connected");
+      socket.send("listen");
+      socket.addEventListener("message", (event) => {
+  			console.log(event.data);
+        update(JSON.parse(event.data));
+    });
+  });
+  }
+
 }
 
 function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,clouds=0) {
@@ -120,8 +141,21 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
     ctx.drawImage(image,0,0,wid,image.height/image.width*wid);
     ctx.restore();
   }
+  function drawLayer(image,d,altitude,maxAlt,offset=0,ground=false){
+    var horyzont2=Math.atan((altitude-maxAlt)/d)/Math.PI*180;
+    var horyzontH2=Math.floor(horyzont2*height/aHeight+height/2);
+    var imwidth=width/aWidth*maxA*(dmax**2+Atm**2)**0.5/(d**2+(altitude-maxAlt)**2)**0.5*2;
+    if(ground){
+          imwidth=width/aWidth*maxA*(d**2+Atm**2)**0.5/(d**2+(altitude-maxAlt)**2)**0.5;
+    }
+    if(ground){
+    ctx.drawImage(image,width/2-imwidth/2*(1+offset/2),horyzontH2,imwidth,image.height/image.width*imwidth);}else{
+      ctx.drawImage(image,width/2-imwidth/2*(1+offset/2),horyzontH2-image.height/image.width*imwidth/2,imwidth,image.height/image.width*imwidth);
+    }
+  }
   function drawWorld(){
-    var dmax=200000;
+          var a=Math.sin(data.time/1000/3600/24%1*2*Math.PI-Math.PI/2);
+          sunY=height/2-45*a/aHeight*height;
     horyzont=Math.acos(R/(R+data["altitude"]))/Math.PI*180;
     var horyzontH=Math.floor(horyzont*height/aHeight+height/2);
     ctx.drawImage(sky,0,0,width,sky.height/sky.width*width);
@@ -137,23 +171,33 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
     root.style.setProperty('--roll', roll/Math.PI*180);
     root.style.setProperty('--pitch', pitch/Math.PI*180);
     marker.innerText=Math.floor(data.altitude)+"m";
-    for(var i=0;i<terrain.length;i+=1/64){
+    var cloudN0=1;
+    var cloudN1=8;
+    var cloudN2=10;
+    for(var i=0;i<terrain.length;i+=1){
     var d=dmax*(terrain.length-i)/terrain.length;
-    if(i%1==0){
-    var horyzont2=Math.atan(data["altitude"]/d)/Math.PI*180;
-    var horyzontH2=Math.floor(horyzont2*height/aHeight+height/2);
-    var imwidth=width/aWidth*maxA*(d**2+Atm**2)**0.5/(d**2+(data.altitude-1500)**2)**0.5
-    ctx.drawImage(terrain[i],width/2-imwidth/2,horyzontH2,imwidth,terrain[i].height/terrain[i].width*imwidth);}
-    var horyzont2=Math.atan((data["altitude"]-cloudAltitude)/d)/Math.PI*180;
-    var horyzontH2=Math.floor(horyzont2*height/aHeight+height/2);
-    var imwidth=width/aWidth*maxA*(dmax**2+Atm**2)**0.5/(d**2+data.altitude**2)**0.5*1.1;
-    ctx.drawImage(clouds,width/2-imwidth/2+(-1)**i*0.1*imwidth,horyzontH2-clouds.height/clouds.width*imwidth/2,imwidth,clouds.height/clouds.width*imwidth);
+    drawLayer(terrain[i],d,data.altitude,0,0,true);
+    for(j=0;j<cloudN0;j++){
+    d=dmax*(terrain.length-i-j/cloudN0)/terrain.length;
+    var offset = Math.sin((i+j/cloudN0)*2)*0.1;
+    drawLayer(cum,d,data.altitude,cloudAltitude[0],offset);
   }
-  
-    
-    drawBox(ctx,boxFront,width/2,height/2);
-    ctx.drawImage(fog,0,-data.cloudAltitude*m+data.altitude*m-cloudThickness,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
-  
+    for(j=0;j<cloudN1;j++){
+    d=dmax*(terrain.length-i-j/cloudN1)/terrain.length;
+    var offset = Math.sin((i+j/cloudN1)/3)/2+Math.sin((i+j/cloudN2)*3*Math.PI)/2;
+    drawLayer(clouds,d,data.altitude,cloudAltitude[1],offset)
+  }
+    for(j=0;j<cloudN2;j++){
+    d=dmax*(terrain.length-i-j/cloudN2)/terrain.length;
+    var offset = Math.sin((i+j/cloudN2)/5)/2+Math.sin((i+j/cloudN2)*3*Math.PI)/2;
+    drawLayer(clouds,d,data.altitude,cloudAltitude[2],offset)
+  }
+}
+    drawBox(ctx,boxFront,width/2,height*0.8-1.5*m,0.3*m,roll);
+    drawBox(ctx,baloon,width/2,height*0.8-1.5*m,2*m,roll);
+    ctx.drawImage(fog,0,-cloudAltitude[0]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
+    ctx.drawImage(fog,0,-cloudAltitude[1]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
+  ctx.drawImage(fog,0,-cloudAltitude[2]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
   }
   
 
@@ -161,7 +205,7 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
   terrain[terrain.length-1].onload=function(){
 
 
-
+    
     const socket = new WebSocket("wss://confine.kolevi.net/ws");
 
     // Connection opened
@@ -188,11 +232,8 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
           yaw=Math.atan2(data.magy,data.magx)+Math.PI ;
           roll=Math.atan2(-data.ayG,data.azG);
           pitch=Math.atan2(data.axG,data.azG);
-          var a=Math.sin(data.time/1000/3600/24%1*2*Math.PI-Math.PI/2);
-          sunY=height/2-45*a/aHeight*height;
+
           drawWorld();
-       
+        //document.getElementById("data").innerHTML = JSON.stringify(data, null, 4).replace(/\n/g, "<br>").replace(/ /g, "&nbsp;");
 	}
-
-
 
