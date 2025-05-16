@@ -1,9 +1,13 @@
 const canvas=document.getElementById("image");
+const mapCanvas=document.getElementById("map");
+const mapFrame=document.getElementById("iframe");
 const width = canvas.clientWidth;
 const height = canvas.clientHeight;
 var terrain=[];
 var cloudThickness=1000;
 var cloudAltitude=[2000,8000,16000];
+mapCanvas.width=mapCanvas.clientWidth;
+mapCanvas.height=mapCanvas.clientHeight;
 canvas.width=width;
 canvas.height=height;
 const maxA=90;
@@ -22,9 +26,10 @@ var yaw;
 var root = document.querySelector(':root');
 var marker=document.getElementById('marker');
 const ctx = canvas.getContext("2d");
+const map = mapCanvas.getContext("2d");
 const Atm=40000;
 const R=6357000;
-const m=height/aHeight*15;
+const m=height/aHeight*10;
 var mode="baloon";
     var dmax=200000;
 var data={
@@ -49,8 +54,8 @@ var cum=new Image();
 cum.src="./textures/cum.png"
 var clouds=new Image();
 clouds.src="./textures/clouds.png"
-var grid=new Image();
-grid.src="./textures/grid.png"
+var cur=new Image();
+cur.src="./textures/cur.png"
 for(var i=0;i<5;i++){
 terrain[i]=new Image();
 terrain[i].src="./textures/terrain"+i+".png"}
@@ -171,9 +176,9 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
     root.style.setProperty('--roll', roll/Math.PI*180);
     root.style.setProperty('--pitch', pitch/Math.PI*180);
     marker.innerText=Math.floor(data.altitude)+"m";
-    var cloudN0=1;
-    var cloudN1=8;
-    var cloudN2=10;
+    var cloudN0=2;
+    var cloudN1=5;
+    var cloudN2=25;
     for(var i=0;i<terrain.length;i+=1){
     var d=dmax*(terrain.length-i)/terrain.length;
     drawLayer(terrain[i],d,data.altitude,0,0,true);
@@ -189,17 +194,23 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
   }
     for(j=0;j<cloudN2;j++){
     d=dmax*(terrain.length-i-j/cloudN2)/terrain.length;
-    var offset = Math.sin((i+j/cloudN2)/5)/2+Math.sin((i+j/cloudN2)*3*Math.PI)/2;
-    drawLayer(clouds,d,data.altitude,cloudAltitude[2],offset)
+    var offset = Math.sin((i+j/cloudN2)/3)/2+Math.sin((i+j/cloudN2)*cloudN2/8*Math.PI);
+    drawLayer(cur,d,data.altitude,cloudAltitude[2],offset)
   }
 }
-    drawBox(ctx,boxFront,width/2,height*0.8-1.5*m,0.3*m,roll);
-    drawBox(ctx,baloon,width/2,height*0.8-1.5*m,2*m,roll);
+    drawBox(ctx,boxFront,width/2,height*0.65-1.5*m,0.3*m,roll);
+    drawBox(ctx,baloon,width/2,height*0.65-1.5*m,2*m,roll);
     ctx.drawImage(fog,0,-cloudAltitude[0]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
     ctx.drawImage(fog,0,-cloudAltitude[1]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
   ctx.drawImage(fog,0,-cloudAltitude[2]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
-  }
+}
+  function updateMap(){
+mapFrame.src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d"+(data.altitude*10+3000)+"!2d"+data.lon+"!3d"+data.lat+"!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e1!3m2!1sbg!2sbg!4v1747379149629!5m2!1sbg!2sbg";
+  map.clearRect(0,0,mapCanvas.width,mapCanvas.height);
+  drawBox(map,baloon,mapCanvas.width/2,mapCanvas.height/2,mapCanvas.height/4);
   
+}
+  setInterval(updateMap,10000);
 
 
   terrain[terrain.length-1].onload=function(){
@@ -236,4 +247,6 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
           drawWorld();
         //document.getElementById("data").innerHTML = JSON.stringify(data, null, 4).replace(/\n/g, "<br>").replace(/ /g, "&nbsp;");
 	}
+
+
 
