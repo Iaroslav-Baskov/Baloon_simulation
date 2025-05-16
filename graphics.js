@@ -1,13 +1,9 @@
 const canvas=document.getElementById("image");
-const mapCanvas=document.getElementById("map");
-const mapFrame=document.getElementById("iframe");
 const width = canvas.clientWidth;
 const height = canvas.clientHeight;
 var terrain=[];
 var cloudThickness=1000;
 var cloudAltitude=[2000,8000,16000];
-mapCanvas.width=mapCanvas.clientWidth;
-mapCanvas.height=mapCanvas.clientHeight;
 canvas.width=width;
 canvas.height=height;
 const maxA=90;
@@ -24,9 +20,8 @@ var roll;
 var pitch;
 var yaw;
 var root = document.querySelector(':root');
-var marker=document.getElementById('marker');
+var altMarker=document.getElementById('marker');
 const ctx = canvas.getContext("2d");
-const map = mapCanvas.getContext("2d");
 const Atm=40000;
 const R=6357000;
 const m=height/aHeight*10;
@@ -40,8 +35,15 @@ var noiseTime = 0;
 var noise=setInterval(() => {
   makeNoise(ctx);
 }, 50);
-
-
+var map = L.map('map').setView([43, 25], 13);
+  // Add OpenStreetMap tiles
+  L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+  maxZoom: 17,
+  attribution: 'Map data: © OpenStreetMap contributors, SRTM | Map style: © OpenTopoMap (CC-BY-SA)'
+}).addTo(map);
+var latlngs = [];
+var polyline = L.polyline(latlngs, {color: 'red'}).addTo(map);
+var marker = L.marker([0, 0], {draggable: false}).addTo(map);
 var sky=new Image();
 sky.src="./textures/sky.png"
 var fog=new Image();
@@ -62,6 +64,20 @@ terrain[i].src="./textures/terrain"+i+".png"}
 var sunX=width/4;
 var sunY=0;
 var noDataEvent;
+
+const url = "https://confine.kolevi.net/aurora/log.txt"
+
+// try {
+//     const response = await fetch(url, {cache: "no-store"}).then((response) => response.text()).then((text) => {
+//         text = text.slice(0, text.length-2) + "}";
+//         console.log(JSON.parse(text));
+//     });
+// }
+// catch(err) {
+//     console.log(err);
+// }
+
+
 function makeNoise(context) {
   var imgd = context.createImageData(canvas.width, canvas.height);
   var pix = imgd.data;
@@ -154,7 +170,8 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
           imwidth=width/aWidth*maxA*(d**2+Atm**2)**0.5/(d**2+(altitude-maxAlt)**2)**0.5;
     }
     if(ground){
-    ctx.drawImage(image,width/2-imwidth/2*(1+offset/2),horyzontH2,imwidth,image.height/image.width*imwidth);}else{
+    ctx.drawImage(image,width/2-imwidth/2*(1+offset/2),horyzontH2,imwidth,image.height/image.width*imwidth);}
+    else{
       ctx.drawImage(image,width/2-imwidth/2*(1+offset/2),horyzontH2-image.height/image.width*imwidth/2,imwidth,image.height/image.width*imwidth);
     }
   }
@@ -175,7 +192,7 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
     root.style.setProperty('--yaw', yaw/Math.PI*180);
     root.style.setProperty('--roll', roll/Math.PI*180);
     root.style.setProperty('--pitch', pitch/Math.PI*180);
-    marker.innerText=Math.floor(data.altitude)+"m";
+    altMarker.innerText=Math.floor(data.altitude)+"m";
     var cloudN0=2;
     var cloudN1=5;
     var cloudN2=25;
@@ -205,12 +222,8 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
   ctx.drawImage(fog,0,-cloudAltitude[2]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
 }
   function updateMap(){
-mapFrame.src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d"+(data.altitude*10+3000)+"!2d"+data.lon+"!3d"+data.lat+"!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!5e1!3m2!1sbg!2sbg!4v1747379149629!5m2!1sbg!2sbg";
-  map.clearRect(0,0,mapCanvas.width,mapCanvas.height);
-  drawBox(map,baloon,mapCanvas.width/2,mapCanvas.height/2,mapCanvas.height/4);
-  
+
 }
-  setInterval(updateMap,10000);
 
 
   terrain[terrain.length-1].onload=function(){
@@ -226,8 +239,10 @@ mapFrame.src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d"+(data.alti
       socket.addEventListener("message", (event) => {
   			console.log(event.data);
         update(JSON.parse(event.data));
+        map.setView([data.lat, data.lon], map.getZoom());
     });
-  });}
+  });
+}
 	function update(json){
 	    //tuk promenlivata json e samo nai noviq element
    
@@ -243,10 +258,15 @@ mapFrame.src="https://www.google.com/maps/embed?pb=!1m14!1m12!1m3!1d"+(data.alti
           yaw=Math.atan2(data.magy,data.magx)+Math.PI ;
           roll=Math.atan2(-data.ayG,data.azG);
           pitch=Math.atan2(data.axG,data.azG);
-
+     if (json["lat"] && json["lon"]) {
+     var latlng = L.latLng(json["lat"], json["lon"]);
+    marker.setLatLng(latlng); 
+    polyline.addLatLng(latlng);
+}
           drawWorld();
         //document.getElementById("data").innerHTML = JSON.stringify(data, null, 4).replace(/\n/g, "<br>").replace(/ /g, "&nbsp;");
 	}
+
 
 
 
