@@ -254,7 +254,7 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
             noise=setInterval(() => {
               makeNoise(ctx);
             }, 50);
-          },5000);
+          },40000);
           yaw=Math.atan2(data.magy,data.magx)+Math.PI ;
           roll=Math.atan2(-data.ayG,data.azG);
           pitch=Math.atan2(data.axG,data.azG);
