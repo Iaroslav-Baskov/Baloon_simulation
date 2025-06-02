@@ -1,7 +1,11 @@
 const canvas=document.getElementById("image");
+const diagramsIm=document.getElementById("diagramsIm");
+diagramsIm.width=diagramsIm.clientWidth;
+diagramsIm.height=diagramsIm.clientHeight;
 const width = canvas.clientWidth;
 const height = canvas.clientHeight;
 var terrain=[];
+var langSelect=document.getElementById("lang");
 var cloudThickness=1000;
 var cloudAltitude=[2000,8000,16000];
 canvas.width=width;
@@ -28,7 +32,7 @@ const m=height/aHeight*10;
 var mode="baloon";
     var dmax=200000;
 var data={
-  altitude:25000,
+  altitude:30000,
   time:6500000000,
 }
 var noiseTime = 0;
@@ -63,19 +67,45 @@ terrain[i]=new Image();
 terrain[i].src="./textures/terrain"+i+".png"}
 var sunX=width/4;
 var sunY=0;
+const form = document.forms[0];
+const radios = form.elements["selectData"];
+
 var noDataEvent;
+var allData=[
+  {AHT_tmp:[]}
+];
+async function startData() {
+  const url = "https://confine.kolevi.net/aurora/log.txt"
+try {
+    const response = await fetch(url, {cache: "no-store"}).then((response) => response.text()).then((text) => {
+        text = text.slice(0, text.length-2) + "}";
+        var json=JSON.parse(text);
+        console.log(json);
+        for(const [key, value] of Object.entries(json)){
+       if (value["lat"] ) {
+        if(value["lat"]>=0){
+        var latlng = L.latLng(value["lat"], value["lon"]);
+        marker.setLatLng(latlng); 
+        polyline.addLatLng(latlng);
+            }
+            for(const [parameter, value2] of Object.entries(value)){
+              if(!allData[parameter]){
+                allData[parameter]=[];
+              }
+              allData[parameter].push({x:parseFloat(value2),y:parseFloat(value.altitude)});
+            }
+          }
+        }
+       drawChart([allData.AHT_tmp,allData.BMP_tmp,allData.gtmp],["outside1","outside2","inside"],"temperature","°C");  
+});
+}
+catch(err) {
+    console.log(err);
+}
+}
 
-const url = "https://confine.kolevi.net/aurora/log.txt"
 
-// try {
-//     const response = await fetch(url, {cache: "no-store"}).then((response) => response.text()).then((text) => {
-//         text = text.slice(0, text.length-2) + "}";
-//         console.log(JSON.parse(text));
-//     });
-// }
-// catch(err) {
-//     console.log(err);
-// }
+
 
 
 function makeNoise(context) {
@@ -221,18 +251,16 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
     ctx.drawImage(fog,0,-cloudAltitude[1]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
   ctx.drawImage(fog,0,-cloudAltitude[2]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
 }
-  function updateMap(){
+function updateDiagrams(){
 
 }
 
-
+startData();
   terrain[terrain.length-1].onload=function(){
-
 
     
     const socket = new WebSocket("wss://confine.kolevi.net/ws");
 
-    // Connection opened
     socket.addEventListener("open", (event) => {
       console.log("Connected");
       socket.send("listen");
@@ -254,7 +282,7 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
             noise=setInterval(() => {
               makeNoise(ctx);
             }, 50);
-          },40000);
+          },30000);
           yaw=Math.atan2(data.magy,data.magx)+Math.PI ;
           roll=Math.atan2(-data.ayG,data.azG);
           pitch=Math.atan2(data.axG,data.azG);
@@ -264,9 +292,112 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
     polyline.addLatLng(latlng);
 }
           drawWorld();
-        //document.getElementById("data").innerHTML = JSON.stringify(data, null, 4).replace(/\n/g, "<br>").replace(/ /g, "&nbsp;");
 	}
+for(i=0;i<radios.length;i++){
+radios[i].onclick=function(){
+       switch(radios.value){
+       case "temperature":
+       updateChart([allData.AHT_tmp,allData.BMP_tmp,allData.gtmp],["outside temperature 1","outside temperature 2","inside temperature"],"temperature","°C");  
+       break;
+       case "pressure":
+       updateChart([allData.BMP_pPa],["pressure"],"pressure","Pa");  
+       break;
+       case "humidity":
+       updateChart([allData["AHT_hum%"]],["humidity"],"humidity","%");  
+       break;
+       case "PMconc":
+       updateChart([allData.pm1_0,allData.pm2_5,allData.pm10_0],["pm1_0","pm2_5","pm10_0"],"concentration","µg/m³");  
+       break;
+       case "PMnum":
+       updateChart([allData["03um"],allData["05um"],allData["10um"]],["03µm","05µm","10µm"],"number","n/0.1L");  
+       break;
+      }}}
+langSelect.onchange=function(){
+    if(langSelect.value=="bg"){
+      var lines = document.getElementsByClassName('bg');
+        for(i=0; i<lines.length; i++) {
+            lines[i].style.display="unset";
+          }
+        lines = document.getElementsByClassName('en');
+        for(i=0; i<lines.length; i++) {
+            lines[i].style.display="none";
+          }
+    }
+        if(langSelect.value=="en"){
+      var lines = document.getElementsByClassName('en');
+        for(i=0; i<lines.length; i++) {
+            lines[i].style.display="unset";
+          }
+        lines = document.getElementsByClassName('bg');
+        for(i=0; i<lines.length; i++) {
+            lines[i].style.display="none";
+          }
+    }
+}
+var myChart;
+var font=parseFloat(getComputedStyle(document.body).getPropertyValue('font-size'));
+Chart.defaults.plugins.legend.labels.color = "#F00";
+Chart.defaults.scale.border.color="#800";
+Chart.defaults.scale.grid.color="#800";
+Chart.defaults.plugins.title.color = "#F00"
+Chart.defaults.scale.ticks.color = "#800";
+Chart.defaults.font = {
+  size: font,
+  family: 'myFont',
+  weight: 'normal',
+};
+function drawChart(Data,labels,xName,xUnit){
+var dsets=[];
+for(var i=0; i<Data.length;i++){
+  dsets.push({
+      pointRadius: 1,
+      label: labels[i],
+      data: Data[i]
+    });
 
+}
 
+myChart=new Chart("diagramsIm", {
+  type: "scatter",
+      options: {
+        scales: {
+            y: {
+                title:{
+                  display: true,
+                  text: 'altitude',
+                  color: "#800"
+                },
+                ticks: {
+                    callback: function(value, index, ticks) {
+                        return value + "m";
+                    }
+                }
+            },
+        }
+    }
+});
+myChart.options.responsive=true;
+updateChart(Data,labels,xName,xUnit)
+}
+function updateChart(Data,labels,xName,xUnit){
+var dsets=[];
+for(var i=0; i<Data.length;i++){
+  dsets.push({
+      pointRadius: 1,
+      label: labels[i],
+      data: Data[i]
+    });
 
-
+}
+myChart.data.datasets=dsets;
+myChart.options.scales.x={title:{
+                  display: true,
+                  text: xName,
+                  color: "#800"
+                },
+                ticks: {
+                    callback: function(value, index, ticks) {
+                        return value + xUnit;
+                    }
+                }};
+    myChart.update();}
