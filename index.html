@@ -125,7 +125,7 @@
             width: 100vw;
             height: 70vh;
             z-index: 4;
-            visibility: hidden;
+            display: none;
             box-sizing:border-box;
         }
         .window .chart{
@@ -344,26 +344,26 @@
 	var window4=document.getElementById("observationWindow");
         function window1Show(){
             windowClose();
-            window1.style.visibility="visible";
+            window1.style.display="block";
         }
         function windowClose(){
-            window1.style.visibility="hidden";
-            window2.style.visibility="hidden";
-            window3.style.visibility="hidden";
-	    window4.style.visibility="hidden";
+            window1.style.display="none";
+            window2.style.display="none";
+            window3.style.display="none";
+	    window4.style.display="none";
         }
         function window2Show(){
             windowClose();
-            window2.style.visibility="visible";
+            window2.style.display="block";
         }
 	function window3Show(){
             windowClose();
-            window3.style.visibility="visible";
+            window3.style.display="block";
         }
 	    
 	function window4Show(){
             windowClose();
-            window4.style.visibility="visible";
+            window4.style.display="block";
         }
     </script>
 </body>
