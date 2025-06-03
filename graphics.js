@@ -50,7 +50,7 @@ var map2 = L.map('map2').setView([43, 25], 13);
   L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
   maxZoom: 17,
   attribution: 'Map data: © OpenStreetMap contributors, SRTM | Map style: © OpenTopoMap (CC-BY-SA)'
-}).addTo(map);
+}).addTo(map2);
 var latlngs = [];
 var polyline = L.polyline(latlngs, {color: 'red'}).addTo(map);
 var marker = L.marker([0, 0], {draggable: false}).addTo(map);
