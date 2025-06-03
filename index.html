@@ -136,7 +136,7 @@
             height: calc(100% - var(--font) * 2);
             
         }
-        .window form{
+        .window .dataSelectForm{
             width:calc(var(--font) * 10);
             position: absolute;
             top:calc(var(--font) * 1);
@@ -295,7 +295,7 @@
             
         </canvas></div>
 
-        <form style="z-index:7">
+        <form style="z-index:7" class="dataSelectForm">
               <label for="temperature" class="container">
                 <p class="en">temperature</p><p class="bg">температура</p>
                   <input type="radio" name="selectData" value="temperature" checked>
@@ -333,7 +333,9 @@
         <a class="closer" onclick="windowClose()">X</a>
     </div>
     <div class="window" id="observationWindow">
-	    
+	    <form>
+            <input type="number">
+        </form>
         <a class="closer" onclick="windowClose()">X</a>
     </div>
     <script>
