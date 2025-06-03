@@ -46,15 +46,15 @@ var map = L.map('map').setView([43, 25], 13);
   maxZoom: 17,
   attribution: 'Map data: © OpenStreetMap contributors, SRTM | Map style: © OpenTopoMap (CC-BY-SA)'
 }).addTo(map);
+var latlngs = [];
+var polyline = L.polyline(latlngs, {color: 'red'}).addTo(map);
+var marker = L.marker([0, 0], {draggable: false}).addTo(map);
 var map2 = L.map('map2').setView([43, 25], 13);
   // Add OpenStreetMap tiles
   L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
   maxZoom: 17,
   attribution: 'Map data: © OpenStreetMap contributors, SRTM | Map style: © OpenTopoMap (CC-BY-SA)'
 }).addTo(map2);
-var latlngs = [];
-var polyline = L.polyline(latlngs, {color: 'red'}).addTo(map);
-var marker = L.marker([0, 0], {draggable: false}).addTo(map);
 var observer = L.marker([43, 25], {draggable: true}).addTo(map2);
 var sky=new Image();
 sky.src="./textures/sky.png"
