@@ -270,8 +270,8 @@
     <div class="menu">
         <p class="en">Aurora data: </p><p class="bg">данни: </p>
         <a onclick="window1Show()"><p class="en">diagrams</p><p class="bg">диаграми</p></a>
-        <a href=""><p class="en">raw data file</p><p class="bg">сурови данни</p></a>
-        <a href=""><p class="en">Aurora observation</p><p class="bg">наблюдавай Аврора</p></a>
+        <a onclick="window3Show()"><p class="en">raw data file</p><p class="bg">сурови данни</p></a>
+        <a onclick="window4Show()"><p class="en">Aurora observation</p><p class="bg">наблюдавай Аврора</p></a>
         <a onclick="window2Show()"><p class="en">about mission</p><p class="bg">за полета</p></a>
         <select name="lang" id="lang">
         <option class="option" value="bg"><p>Български</p></option>
@@ -325,12 +325,22 @@
         <a class="closer" onclick="windowClose()">X</a>
     </div>
     <div class="window" id="about">
-
+	    
+        <a class="closer" onclick="windowClose()">X</a>
+    </div>
+    <div class="window" id="rawDataWindow">
+	    
+        <a class="closer" onclick="windowClose()">X</a>
+    </div>
+    <div class="window" id="observationWindow">
+	    
         <a class="closer" onclick="windowClose()">X</a>
     </div>
     <script>
         var window1=document.getElementById("diagrams");
         var window2=document.getElementById("about");
+	var window3=document.getElementById("rawDataWindow");
+	var window4=document.getElementById("observationWindow");
         function window1Show(){
             windowClose();
             window1.style.display="block";
@@ -338,10 +348,20 @@
         function windowClose(){
             window1.style.display="none";
             window2.style.display="none";
+            window3.style.display="none";
+	    window4.style.display="none";
         }
         function window2Show(){
             windowClose();
             window2.style.display="block";
+        }
+	function window3Show(){
+            windowClose();
+            window3.style.display="block";
+        }
+	function window3Show(){
+            windowClose();
+            window3.style.display="block";
         }
     </script>
 </body>
