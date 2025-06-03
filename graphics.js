@@ -46,7 +46,6 @@ var map = L.map('map').setView([43, 25], 13);
   maxZoom: 17,
   attribution: 'Map data: © OpenStreetMap contributors, SRTM | Map style: © OpenTopoMap (CC-BY-SA)'
 }).addTo(map);
-
 var map2 = L.map('map2').setView([43, 25], 13);
   // Add OpenStreetMap tiles
   L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
