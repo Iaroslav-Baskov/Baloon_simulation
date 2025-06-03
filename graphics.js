@@ -35,6 +35,7 @@ var data={
   altitude:30000,
   time:6500000000,
 }
+
 var noiseTime = 0;
 var noise=setInterval(() => {
   makeNoise(ctx);
