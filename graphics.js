@@ -243,7 +243,6 @@ startData();
       socket.addEventListener("message", (event) => {
   			console.log(event.data);
         update(JSON.parse(event.data));
-        map.setView([data.lat, data.lon], map.getZoom());
     });
   });
 }
@@ -266,6 +265,7 @@ startData();
             observerMoved();
           }
           radios[0].onclick();
+        map.setView([data.lat, data.lon], map.getZoom());
 	}
 for(i=0;i<radios.length;i++){
 radios[i].onclick=function(){
@@ -419,6 +419,7 @@ var windows=[document.getElementById("diagrams"),document.getElementById("about"
 
 function initObsMap(){
             map2 = L.map('map2').setView([43, 25], 13);
+setLocation();
   // Add OpenStreetMap tiles
   L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
   maxZoom: 17,
@@ -429,7 +430,20 @@ observer = L.marker([43, 25], {draggable: true}).addTo(map2);
 observerMoved();
 observer.on("dragend", (e) => observerMoved());
 }
-
+function setLocation(){
+    if ("geolocation" in navigator) {
+  navigator.geolocation.getCurrentPosition((position) => {
+    var lon=position.coords.longitude;
+    var lat=position.coords.latitude
+        map2.setView([
+  lat, 
+  lon], map2.getZoom());
+  observer.setLatLng({lat:lat, 
+  lng:lon});
+  observerMoved();
+});
+} 
+}
 function observerMoved(){
   {
   const latlng = observer._latlng;
