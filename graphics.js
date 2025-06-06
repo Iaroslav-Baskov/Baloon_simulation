@@ -35,7 +35,6 @@ var data={
   altitude:30000,
   time:6500000000,
 }
-
 var noiseTime = 0;
 var noise=setInterval(() => {
   makeNoise(ctx);
@@ -49,13 +48,9 @@ var map = L.map('map').setView([43, 25], 13);
 var latlngs = [];
 var polyline = L.polyline(latlngs, {color: 'red'}).addTo(map);
 var marker = L.marker([0, 0], {draggable: false}).addTo(map);
-var map2 = L.map('map2').setView([43, 25], 13);
-  // Add OpenStreetMap tiles
-  L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
-  maxZoom: 17,
-  attribution: 'Map data: © OpenStreetMap contributors, SRTM | Map style: © OpenTopoMap (CC-BY-SA)'
-}).addTo(map2);
-var observer = L.marker([43, 25], {draggable: true}).addTo(map2);
+var map2;
+var observer;
+var sightRay;
 var sky=new Image();
 sky.src="./textures/sky.png"
 var fog=new Image();
@@ -90,19 +85,7 @@ try {
         var json=JSON.parse(text);
         console.log(json);
         for(const [key, value] of Object.entries(json)){
-       if (value["lat"] ) {
-        if(value["lat"]>=0){
-        var latlng = L.latLng(value["lat"], value["lon"]);
-        marker.setLatLng(latlng); 
-        polyline.addLatLng(latlng);
-            }
-            for(const [parameter, value2] of Object.entries(value)){
-              if(!allData[parameter]){
-                allData[parameter]=[];
-              }
-              allData[parameter].push({x:parseFloat(value2),y:parseFloat(value.altitude)});
-            }
-          }
+         loadData(value);
         }
        drawChart([allData.AHT_tmp,allData.BMP_tmp,allData.gtmp],["outside1","outside2","inside"],"temperature","°C");  
 });
@@ -134,17 +117,6 @@ function makeNoise(context) {
   ctx.textAlign = "center";
   ctx.fillText("waiting", width/2,height/2-0.5/aWidth*width*5);
   ctx.fillText("for data", width/2,height/2+0.5/aWidth*width*5);
-  if(noiseTime%1000==0){
-    socket = new WebSocket("wss://confine.kolevi.net/ws");
-    socket.addEventListener("open", (event) => {
-      console.log("Connected");
-      socket.send("listen");
-      socket.addEventListener("message", (event) => {
-  			console.log(event.data);
-        update(JSON.parse(event.data));
-    });
-  });
-  }
 
 }
 
@@ -259,10 +231,6 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
     ctx.drawImage(fog,0,-cloudAltitude[1]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
   ctx.drawImage(fog,0,-cloudAltitude[2]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
 }
-function updateDiagrams(){
-
-}
-
 startData();
   terrain[terrain.length-1].onload=function(){
 
@@ -281,44 +249,54 @@ startData();
 }
 	function update(json){
 	    //tuk promenlivata json e samo nai noviq element
-   
-        for(var i in json) {
-        	data[i] = json[i];}
+          loadData(json);
           clearTimeout(noDataEvent);
           clearInterval(noise);
           noDataEvent=setTimeout(function(){
             noise=setInterval(() => {
               makeNoise(ctx);
             }, 50);
-          },30000);
+          },40000);
           yaw=Math.atan2(data.magy,data.magx)+Math.PI ;
           roll=Math.atan2(-data.ayG,data.azG);
           pitch=Math.atan2(data.axG,data.azG);
-     if (json["lat"] && json["lon"]) {
-     var latlng = L.latLng(json["lat"], json["lon"]);
-    marker.setLatLng(latlng); 
-    polyline.addLatLng(latlng);
-}
+
           drawWorld();
+          if(observer!=undefined){
+            observerMoved();
+          }
+          radios[0].onclick();
 	}
 for(i=0;i<radios.length;i++){
 radios[i].onclick=function(){
        switch(radios.value){
        case "temperature":
-       updateChart([allData.AHT_tmp,allData.BMP_tmp,allData.gtmp],["outside temperature 1","outside temperature 2","inside temperature"],"temperature","°C");  
+       updateChart([allData.AHT_tmp,allData.BMP_tmp,allData.gtmp],["outside temperature 1","outside temperature 2","inside temperature"],"temperature","°C","altitude","m");  
        break;
        case "pressure":
-       updateChart([allData.BMP_pPa],["pressure"],"pressure","Pa");  
+       updateChart([allData.BMP_pPa],["pressure"],"pressure","Pa","altitude","m");  
        break;
        case "humidity":
-       updateChart([allData["AHT_hum%"]],["humidity"],"humidity","%");  
+       updateChart([allData["AHT_hum%"]],["humidity"],"humidity","%","altitude","m");  
        break;
        case "PMconc":
-       updateChart([allData.pm1_0,allData.pm2_5,allData.pm10_0],["pm1_0","pm2_5","pm10_0"],"concentration","µg/m³");  
+       updateChart([allData.pm1_0,allData.pm2_5,allData.pm10_0],["pm1_0","pm2_5","pm10_0"],"concentration","µg/m³","altitude","m");  
        break;
        case "PMnum":
-       updateChart([allData["03um"],allData["05um"],allData["10um"]],["03µm","05µm","10µm"],"number","n/0.1L");  
+       updateChart([allData["03um"],allData["05um"],allData["10um"]],["03µm","05µm","10µm"],"number","n/0.1L","altitude","m");  
        break;
+       case "rssi":
+       updateChart([allData["rissi"]],["rssi"],"rssi","db","altitude","m");  
+       break
+       case "rssi_byTime":
+       updateChart([allData["rissi_byTime"]],["rssi"],"time","h","rssi","db");  
+       break
+       case "snr":
+       updateChart([allData["snr"]],["snr"],"snr","db","altitude","m");  
+       break
+       case "snr_byTime":
+       updateChart([allData["snr_byTime"]],["snr"],"time","h","snr","db");  
+       break
       }}}
 langSelect.onchange=function(){
     if(langSelect.value=="bg"){
@@ -368,7 +346,11 @@ for(var i=0; i<Data.length;i++){
 myChart=new Chart("diagramsIm", {
   type: "scatter",
       options: {
+            animation: {
+        duration: 0
+    },
         scales: {
+          
             y: {
                 title:{
                   display: true,
@@ -387,7 +369,7 @@ myChart=new Chart("diagramsIm", {
 myChart.options.responsive=true;
 updateChart(Data,labels,xName,xUnit)
 }
-function updateChart(Data,labels,xName,xUnit){
+function updateChart(Data,labels,xName,xUnit,yName,yUnit){
 var dsets=[];
 for(var i=0; i<Data.length;i++){
   dsets.push({
@@ -408,4 +390,100 @@ myChart.options.scales.x={title:{
                         return value + xUnit;
                     }
                 }};
+myChart.options.scales.y={title:{
+                  display: true,
+                  text: yName,
+                  color: "#800"
+                },
+                ticks: {
+                    callback: function(value, index, ticks) {
+                        return value + yUnit;
+                    }
+                }};
     myChart.update();}
+
+
+
+var windows=[document.getElementById("diagrams"),document.getElementById("about"),document.getElementById("rawDataWindow"),document.getElementById("observationWindow")];
+        function windowShow(n){
+            windowClose();
+            windows[n].style.display="block";
+            if(n==3 && map2==undefined){
+              initObsMap();
+}
+        }
+        function windowClose(){
+          for(var i=0; i<windows.length;i++){
+            windows[i].style.display="none";}}
+
+
+function initObsMap(){
+            map2 = L.map('map2').setView([43, 25], 13);
+  // Add OpenStreetMap tiles
+  L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
+  maxZoom: 17,
+  attribution: 'Map data: © OpenStreetMap contributors, SRTM | Map style: © OpenTopoMap (CC-BY-SA)'
+}).addTo(map2);
+sightRay = L.polyline([], {color: 'red'}).addTo(map2);
+observer = L.marker([43, 25], {draggable: true}).addTo(map2);
+observerMoved();
+observer.on("dragend", (e) => observerMoved());
+}
+
+function observerMoved(){
+  {
+  const latlng = observer._latlng;
+fetch(`https://api.open-elevation.com/api/v1/lookup?locations=${latlng.lat},${latlng.lng}`, {
+  method: 'GET',
+  cache: 'no-store'
+}).then(res => res.json())
+      .then(d => {
+        const elevation = d.results[0].elevation;
+        calcObservation(latlng.lat,data.lat,latlng.lng,data.lon,elevation,data.altitude,R)
+      })
+      .catch(err => {
+        console.error("Elevation API error:", err);
+      });
+}
+}
+function calcObservation(lat0,lat1,lon0,lon1,alt0,alt1,R){
+  R+=alt0;
+  alt1-=alt0;
+  var l=Math.acos(Math.sin(lat0/180*Math.PI)*Math.sin(lat1/180*Math.PI)+Math.cos(lat0/180*Math.PI)*Math.cos(lat1/180*Math.PI)*Math.cos((lon1-lon0)/180*Math.PI));
+  var a;
+  if(lat0<lat1){
+  a=Math.asin(Math.cos(lat1/180*Math.PI)*Math.sin((lon1-lon0)/180*Math.PI)/Math.sin(l));}else{
+  a=Math.PI-Math.asin(Math.cos(lat1/180*Math.PI)*Math.sin((lon1-lon0)/180*Math.PI)/Math.sin(l));
+  }if(a<0){
+    a+=2*Math.PI;
+  }
+  var relH=alt1/R;
+  var D=R*Math.sqrt(relH**2+4*Math.sin(l/2)**2*(1+relH));
+  var h=Math.asin(alt1/D*Math.cos(l/2))-l/2;
+  sightRay.setLatLngs([{lat:lat0,lng:lon0},{lat:lat1,lng:lon1}]);
+  observer.bindPopup(`distance: ${Math.floor(D/10)/100}km \n\r azimuth ${Math.floor(a*180/Math.PI*100)/100}° \n\r altitude ${Math.floor(h*180/Math.PI*100)/100}°`).openPopup();
+}
+
+function loadData(json){
+        if (json["lat"] ) {
+        if(json["lat"]>=0){
+               var latlng = L.latLng(json["lat"], json["lon"]);
+    marker.setLatLng(latlng); 
+    polyline.addLatLng(latlng);}}
+          for(var [parameter, value] of Object.entries(json)){
+              value=parseFloat(value);
+              if(!allData[parameter]){
+                allData[parameter]=[];
+              }
+              if(!allData[parameter+"_byTime"]){
+                allData[parameter+"_byTime"]=[];
+              }
+              data[parameter]=value;
+              if(json["altitude"]){
+              allData[parameter].push({x:parseFloat(value),y:parseFloat(json.altitude)});}
+              if(json["time"]){
+                allData[parameter+"_byTime"].push({y:parseFloat(value),x:parseFloat((json.time/1000/3600+3))});
+              }
+            }
+        
+}
