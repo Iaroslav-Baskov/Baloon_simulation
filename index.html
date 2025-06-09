@@ -296,6 +296,7 @@
         </canvas></div>
 
         <form style="z-index:7" class="dataSelectForm">
+            Data:<br><br>
               <label for="temperature" class="container">
                 <p class="en">temperature</p><p class="bg">температура</p>
                   <input type="radio" name="selectData" value="temperature" checked>
@@ -321,24 +322,30 @@
                   <input  type="radio" name="selectData" value="PMnum">
                   <span class="checkmark"></span>
               </label><br>
-             <label for="PMnum" class="container">
-                  rssi (by altitude)
+             <label for="rssi" class="container">
+                  rssi
                   <input  type="radio" name="selectData" value="rssi">
                   <span class="checkmark"></span>
               </label><br>
-              <label for="PMnum" class="container">
-                  rssi (by time)
-                  <input  type="radio" name="selectData" value="rssi_byTime">
-                  <span class="checkmark"></span>
-              </label><br>
-              <label for="PMnum" class="container">
-                  snr (by altitude)
+              <label for="snr" class="container">
+                  snr
                   <input  type="radio" name="selectData" value="snr">
                   <span class="checkmark"></span>
               </label><br>
-              <label for="PMnum" class="container">
-                  snr (by time)
-                  <input  type="radio" name="selectData" value="snr_byTime">
+              <label for="volt" class="container">
+                  voltage
+                  <input  type="radio" name="selectData" value="volt">
+                  <span class="checkmark"></span>
+              </label><br>
+              Related to:<br><br>
+              <label for="altitude" class="container">
+                  altitude
+                  <input  type="radio" name="relTo" value="altitude">
+                  <span class="checkmark"></span>
+              </label><br>
+             <label for="time" class="container">
+                  time
+                  <input  type="radio" name="relTo" value="time">
                   <span class="checkmark"></span>
               </label><br>
         </form>
@@ -364,4 +371,3 @@
 <script src="graphics.js">
 
 </script>
-
