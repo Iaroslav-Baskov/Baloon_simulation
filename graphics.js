@@ -13,6 +13,7 @@ canvas.height=height;
 const maxA=90;
 var aHeight;
 var aWidth;
+var zeroHour;
 var horyzont=0;
 if(height>width){
 aHeight=maxA;
@@ -72,10 +73,11 @@ var sunX=width/4;
 var sunY=0;
 const form = document.forms[0];
 const radios = form.elements["selectData"];
+const relatedTo = form.elements["relTo"];
 
 var noDataEvent;
 var allData=[
-  {AHT_tmp:[]}
+  {AHT_temp:[]}
 ];
 async function startData() {
   const url = "https://confine.kolevi.net/aurora/log.txt"
@@ -87,7 +89,7 @@ try {
         for(const [key, value] of Object.entries(json)){
          loadData(value);
         }
-       drawChart([allData.AHT_tmp,allData.BMP_tmp,allData.gtmp],["outside1","outside2","inside"],"temperature","°C");  
+       drawChart([allData.AHT_temp,allData.BMP_temp,allData.gtemp],["outside1","outside2","inside"],"temperature","°C");  
 });
 }
 catch(err) {
@@ -257,8 +259,8 @@ startData();
             }, 50);
           },40000);
           yaw=Math.atan2(data.magy,data.magx)+Math.PI ;
-          roll=Math.atan2(-data.ayG,data.azG);
-          pitch=Math.atan2(data.axG,data.azG);
+          roll=Math.atan2(-data.ay,data.az);
+          pitch=Math.atan2(data.ax,data.az);
 
           drawWorld();
           if(observer!=undefined){
@@ -268,16 +270,24 @@ startData();
         map.setView([data.lat, data.lon], map.getZoom());
 	}
 for(i=0;i<radios.length;i++){
-radios[i].onclick=function(){
+radios[i].onclick=changeData;}
+relatedTo.value="altitude";
+for(i=0;i<relatedTo.length;i++){
+relatedTo[i].onclick=changeData;}
+function changeData(){
+  if(relatedTo.value=="altitude"){
        switch(radios.value){
        case "temperature":
-       updateChart([allData.AHT_tmp,allData.BMP_tmp,allData.gtmp],["outside temperature 1","outside temperature 2","inside temperature"],"temperature","°C","altitude","m");  
+       updateChart([allData.AHT_temp,allData.BMP_temp,allData.gtemp],["outside temperature 1","outside temperature 2","inside temperature"],"temperature","°C","altitude","m");  
+       break;
+       case "temperature_byTime":
+       updateChart([allData["AHT_temp_byTime"],allData["BMP_temp_byTime"],allData["gtemp_byTime"],],["outside temperature 1","outside temperature 2","inside temperature"],"time","h","temperature","°C"); 
        break;
        case "pressure":
-       updateChart([allData.BMP_pPa],["pressure"],"pressure","Pa","altitude","m");  
+       updateChart([allData.BMP_pres],["pressure"],"pressure","Pa","altitude","m");  
        break;
        case "humidity":
-       updateChart([allData["AHT_hum%"]],["humidity"],"humidity","%","altitude","m");  
+       updateChart([allData["AHT_hum"]],["humidity"],"humidity","%","altitude","m");  
        break;
        case "PMconc":
        updateChart([allData.pm1_0,allData.pm2_5,allData.pm10_0],["pm1_0","pm2_5","pm10_0"],"concentration","µg/m³","altitude","m");  
@@ -286,18 +296,43 @@ radios[i].onclick=function(){
        updateChart([allData["03um"],allData["05um"],allData["10um"]],["03µm","05µm","10µm"],"number","n/0.1L","altitude","m");  
        break;
        case "rssi":
-       updateChart([allData["rissi"]],["rssi"],"rssi","db","altitude","m");  
-       break
-       case "rssi_byTime":
-       updateChart([allData["rissi_byTime"]],["rssi"],"time","h","rssi","db");  
-       break
+       updateChart([allData["rssi"]],["rssi"],"rssi","db","altitude","m");  
+       break;
        case "snr":
        updateChart([allData["snr"]],["snr"],"snr","db","altitude","m");  
-       break
-       case "snr_byTime":
+       break;
+       case "volt":
+       updateChart([allData["volt"]],["battery voltage"],"battery voltage","v","altitude","m");  
+       break;
+      }}else{
+       switch(radios.value){
+       case "temperature":
+       updateChart([allData["AHT_temp_byTime"],allData["BMP_temp_byTime"],allData["gtemp_byTime"],],["outside temperature 1","outside temperature 2","inside temperature"],"time","h","temperature","°C"); 
+       break;
+       case "pressure":
+       updateChart([allData.BMP_pres_byTime],["pressure"],"time","h","pressure","Pa");  
+       break;
+       case "humidity":
+       updateChart([allData["AHT_hum_byTime"]],["humidity"],"time","h","humidity","%");  
+       break;
+       case "PMconc":
+       updateChart([allData.pm1_0_byTime,allData.pm2_5_byTime,allData.pm10_0_byTime],["pm1_0","pm2_5","pm10_0"],"time","h","concentration","µg/m³");  
+       break;
+       case "PMnum":
+       updateChart([allData["03um_byTime"],allData["05um_byTime"],allData["10um_byTime"]],["03µm","05µm","10µm"],"time","h","number","n/0.1L");  
+       break;
+       case "rssi":
+       updateChart([allData["rssi_byTime"]],["rssi"],"time","h","rssi","db");  
+       break;
+       case "snr":
        updateChart([allData["snr_byTime"]],["snr"],"time","h","snr","db");  
-       break
-      }}}
+       break;
+      case "volt":
+       updateChart([allData["volt_byTime"]],["battery voltage"],"time","h","battery voltage","v");  
+       break;
+      }
+      }
+    }
 langSelect.onchange=function(){
     if(langSelect.value=="bg"){
       var lines = document.getElementsByClassName('bg');
@@ -479,6 +514,9 @@ function calcObservation(lat0,lat1,lon0,lon1,alt0,alt1,R){
 }
 
 function loadData(json){
+        if(json.time && zeroHour==undefined){
+          zeroHour=json.time;
+        }
         if (json["lat"] ) {
         if(json["lat"]>=0){
                var latlng = L.latLng(json["lat"], json["lon"]);
@@ -496,7 +534,7 @@ function loadData(json){
               if(json["altitude"]){
               allData[parameter].push({x:parseFloat(value),y:parseFloat(json.altitude)});}
               if(json["time"]){
-                allData[parameter+"_byTime"].push({y:parseFloat(value),x:parseFloat((json.time/1000/3600+3))});
+                allData[parameter+"_byTime"].push({y:parseFloat(value),x:parseFloat(((json.time-zeroHour)/1000/3600))});
               }
             }
         
