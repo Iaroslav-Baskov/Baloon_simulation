@@ -89,8 +89,8 @@ terrain[i].src="./textures/terrain"+i+".png"}
 var sunX=width/4;
 var sunY=0;
 const form = document.forms[0];
-const radios = document.getElementById("selectData");
-const relatedTo = document.getElementById("relTo");
+const radios = form.elements["selectData"];
+const relatedTo = form.elements["relTo"];
 
 var noDataEvent;
 var allData=[
@@ -283,12 +283,11 @@ startData();
           if(observer!=undefined){
             observerMoved();
           }
-          radios[0].onclick();
+          changeData();
         map.setView([data.lat, data.lon], map.getZoom());
 	}
 radios.onchange=changeData;
 relatedTo.onchange=changeData;
-
 function changeData(){
   if(relatedTo.value=="altitude"){
        switch(radios.value){
