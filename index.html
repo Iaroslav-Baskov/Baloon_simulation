@@ -296,47 +296,17 @@
         </canvas></div>
 
         <form style="z-index:7" class="dataSelectForm">
-            Data:<br><br>
-              <label for="temperature" class="container">
-                <p class="en">temperature</p><p class="bg">температура</p>
-                  <input type="radio" name="selectData" value="temperature" checked>
-                  <span class="checkmark"></span>
-              </label><br>
-              <label for="pressure" class="container">
-                <p class="en">pressure</p><p class="bg">налягане</p>
-                <input  type="radio" name="selectData" value="pressure">
-                <span class="checkmark"></span>
-              </label><br>
-              <label for="humidity" class="container">
-                  <p class="en">humidity</p><p class="bg">влажност</p>
-                  <input  type="radio" name="selectData" value="humidity">
-                  <span class="checkmark"></span>
-              </label><br>
-              <label for="PMconc" class="container">
-                  <p class="en">Airborne PM concentrations</p><p class="bg">Концентрация прахови частици</p>
-                  <input  type="radio" name="selectData" value="PMconc">
-                  <span class="checkmark"></span>
-              </label><br>
-              <label for="PMnum" class="container">
-                  <p class="en">Airborne PM count</p><p class="bg">Количество прахови частици</p>
-                  <input  type="radio" name="selectData" value="PMnum">
-                  <span class="checkmark"></span>
-              </label><br>
-             <label for="rssi" class="container">
-                  rssi
-                  <input  type="radio" name="selectData" value="rssi">
-                  <span class="checkmark"></span>
-              </label><br>
-              <label for="snr" class="container">
-                  snr
-                  <input  type="radio" name="selectData" value="snr">
-                  <span class="checkmark"></span>
-              </label><br>
-              <label for="volt" class="container">
-                  voltage
-                  <input  type="radio" name="selectData" value="volt">
-                  <span class="checkmark"></span>
-              </label><br>
+            <p class="en">Data</p><p class="bg">Данни</p><br><br>
+	    <select name="selectData" id="selectData">
+        	<option class="option" value="temperature"><p class="en">temperature</p><p class="bg">температура</p></option>
+        	<option class="option" value="pressure"><p class="en">pressure</p><p class="bg">температура</p></option>
+        	<option class="option" value="humidity"><p class="en">humidity</p><p class="bg">температура</p></option>
+        	<option class="option" value="PMconc"><p class="en">Airborne PM concentrations</p><p class="bg">Концентрация прахови частици</p></option>
+        	<option class="option" value="PMnum"><p class="en">Airborne PM count</p><p class="bg">Количество прахови частици</p></option>
+        	<option class="option" value="rssi">rssi</option>
+        	<option class="option" value="snr">snr</option>
+        	<option class="option" value="volt"><p class="en">Battery level (V) </p><p class="bg">Напрежение на батерията (V)</p></option>
+            </select>
               Related to:<br><br>
               <label for="altitude" class="container">
                   altitude
