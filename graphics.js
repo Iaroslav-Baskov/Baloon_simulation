@@ -36,6 +36,23 @@ var data={
   altitude:30000,
   time:6500000000,
 }
+var limits={
+  lat:{max:90, min:-90, exceptions:[]},
+  lon:{max:180, min:-180, exceptions:[]},
+  altitude:{max:100000, min:-1000, exceptions:[]},
+  AHT_temp:{max:60, min:-80, exceptions:[]},
+  BMP_temp:{max:60, min:-80, exceptions:[]},
+  gtemp:{max:60, min:-80, exceptions:[]},
+  volt:{max:5, min:0, exceptions:[]},
+  AHT_hum:{max:100, min:0, exceptions:[]},
+  BMP_pres:{max:200000, min:3000, exceptions:[]},
+  pm1_0:{max:300, min:0, exceptions:[]},
+  pm10_0:{max:300, min:0, exceptions:[]},
+  pm2_5:{max:300, min:0, exceptions:[]},
+  "03µm":{max:300, min:0, exceptions:[]},
+  "05µm":{max:300, min:0, exceptions:[]},
+  "10µm":{max:300, min:0, exceptions:[]},
+};
 var noiseTime = 0;
 var noise=setInterval(() => {
   makeNoise(ctx);
@@ -514,6 +531,7 @@ function calcObservation(lat0,lat1,lon0,lon1,alt0,alt1,R){
 }
 
 function loadData(json){
+  json=filter(json,limits);
         if(json.time && zeroHour==undefined){
           zeroHour=json.time;
         }
@@ -538,4 +556,28 @@ function loadData(json){
               }
             }
         
+}
+function filter(json,limits){
+  var output={};
+  for([parameter,value] of Object.entries(json)){
+
+    var ok=true;
+    if(limits[parameter]){
+      if(limits[parameter].max<value){
+        ok=false;
+      }
+      if(limits[parameter].min>value){
+        ok=false;
+      }
+      for(var i=0;i<limits[parameter].exceptions.length;i++){
+        if(value==limits[parameter].exceptions[i]){
+          ok=false;
+        }
+      }}
+    
+      if(ok==true){
+        output[parameter]=value;
+      }
+  }
+  return output;
 }
