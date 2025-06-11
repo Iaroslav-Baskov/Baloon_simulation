@@ -15,6 +15,7 @@ var aHeight;
 var aWidth;
 var zeroHour;
 var horyzont=0;
+var csvFileLink=document.getElementById("csvFile");
 if(height>width){
 aHeight=maxA;
 aWidth=aHeight*width/height;}else{
@@ -37,8 +38,8 @@ var data={
   time:6500000000,
 }
 var limits={
-  lat:{max:90, min:-90, exceptions:[]},
-  lon:{max:180, min:-180, exceptions:[]},
+  lat:{max:90, min:-90, exceptions:[0]},
+  lon:{max:180, min:-180, exceptions:[0]},
   altitude:{max:100000, min:-1000, exceptions:[]},
   AHT_temp:{max:60, min:-80, exceptions:[]},
   BMP_temp:{max:60, min:-80, exceptions:[]},
@@ -53,6 +54,17 @@ var limits={
   "05µm":{max:300, min:0, exceptions:[]},
   "10µm":{max:300, min:0, exceptions:[]},
 };
+var csvKeys=[
+    "AHT_temp", "AHT_hum", "BMP_temp", "BMP_pres",
+    "ax", "ay", "az", "gx", "gy", "gz", "gtemp",
+    "magx", "magy", "magz", "volt",
+    "pm1_0", "pm2_5", "pm10_0", "03um", "05um", "10um","lon","lat","altitude","time"
+];
+var csvContent = ""; 
+for(key of csvKeys){
+  csvContent+=key+",";
+}
+var csvUrl = URL.createObjectURL(new Blob([csvContent], { type: "text/csv;charset=utf-8;" }));
 var noiseTime = 0;
 var noise=setInterval(() => {
   makeNoise(ctx);
@@ -375,7 +387,7 @@ Chart.defaults.plugins.legend.labels.color = "#F00";
 Chart.defaults.scale.border.color="#800";
 Chart.defaults.scale.grid.color="#800";
 Chart.defaults.plugins.title.color = "#F00"
-Chart.defaults.scale.ticks.color = "#800";
+Chart.defaults.scale.ticks.color = "#F00";
 Chart.defaults.font = {
   size: font,
   family: 'myFont',
@@ -398,21 +410,6 @@ myChart=new Chart("diagramsIm", {
             animation: {
         duration: 0
     },
-        scales: {
-          
-            y: {
-                title:{
-                  display: true,
-                  text: 'altitude',
-                  color: "#800"
-                },
-                ticks: {
-                    callback: function(value, index, ticks) {
-                        return value + "m";
-                    }
-                }
-            },
-        }
     }
 });
 myChart.options.responsive=true;
@@ -432,7 +429,7 @@ myChart.data.datasets=dsets;
 myChart.options.scales.x={title:{
                   display: true,
                   text: xName,
-                  color: "#800"
+                  color: "#F00"
                 },
                 ticks: {
                     callback: function(value, index, ticks) {
@@ -442,7 +439,7 @@ myChart.options.scales.x={title:{
 myChart.options.scales.y={title:{
                   display: true,
                   text: yName,
-                  color: "#800"
+                  color: "#F00"
                 },
                 ticks: {
                     callback: function(value, index, ticks) {
@@ -552,6 +549,20 @@ function loadData(json){
                 allData[parameter+"_byTime"].push({y:parseFloat(value),x:parseFloat(((json.time-zeroHour)/1000/3600))});
               }
             }
+            var row="\n"
+            for(key of csvKeys){
+              if(data[key]){
+                row+=data[key];
+              }else{
+                row+="undefined";
+              }
+              row+=",";
+            }
+            csvContent+=row;
+            URL.revokeObjectURL(csvUrl);
+            csvUrl = URL.createObjectURL(new Blob([csvContent], { type: "text/csv;charset=utf-8;" }));
+            if (csvFileLink) csvFileLink.href = csvUrl;
+
         
 }
 function filter(json,limits){
