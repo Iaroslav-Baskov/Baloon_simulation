@@ -141,11 +141,12 @@
             background: url("textures/azimuth.png") calc(var(--font) * 16); 
             background-position: center;
             background-size: cover;
-            transform: translate(50%,-50%); /*rotate(calc(var(--yaw) * 1deg)); */
+            transform: translate(50%,-50%);
             width: 100%;
             height: 33%;
             margin-top: 50%;
             margin-right: 50%;
+	    margin-left: -50%;
             z-index: 3;
         }
         .angle div{
@@ -156,7 +157,7 @@
             right:50%;
         }
 	.anglecontainer{
-		
+
 		position: fixed;
 		top:0;
 		right: 0;
