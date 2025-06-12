@@ -142,19 +142,28 @@
             background-position: center;
             background-size: cover;
             transform: translate(50%,-50%); /*rotate(calc(var(--yaw) * 1deg)); */
-            width: min(30vw,20vh);
-            height: min(30vw,20vh);
-            margin-top: min(15vw,10vh);
-            margin-right: min(15vw,10vh);
+            width: 100%;
+            height: 33%;
+            margin-top: 50%;
+            margin-right: 50%;
             z-index: 3;
         }
         .angle div{
             position: absolute;
             display: inline-block;
-            width: min(30vw,20vh);
+            width: 100%;
             top:50%;
             right:50%;
         }
+	.angleContainer{
+		position: fixed;
+		top:0;
+		right: 0;
+		background:black;
+		height:min(30vw,15vh)
+		display: flex;
+		flex-direction: column;
+	}
         .map{
             position: fixed;
             width: 100vw;
@@ -276,7 +285,7 @@
         <div class="max marker">30000m</div>
         <div class="alt marker" id="marker">0m</div>
     </div>
-    <div style="position: fixed; right: var(--font);display: flex;flex-direction: column;">
+    <div class="anglecontainer">
     <div class="angle"><div style='content: url("textures/redUp.png");transform: translate(50%,-50%) rotate(calc(var(--yaw) * 1deg));'></div></div>
     <div class="angle" ><div style='content: url("textures/redFront.png");transform: translate(50%,-50%) rotate(calc(var(--roll) * 1deg));'></div></div>
     <div class="angle"><div style='content: url("textures/redSide.png");transform: translate(50%,-50%) rotate(calc(var(--pitch) * 1deg));'></div></div></div>
