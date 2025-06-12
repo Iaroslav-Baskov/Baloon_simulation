@@ -69,7 +69,7 @@ var noiseTime = 0;
 var noise=setInterval(() => {
   makeNoise(ctx);
 }, 50);
-var map = L.map('map').setView([43, 25], 13);
+var map = L.map('map',{ attributionControl:false }).setView([43, 25], 13);
   // Add OpenStreetMap tiles
   L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
   maxZoom: 17,
