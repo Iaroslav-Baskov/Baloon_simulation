@@ -1,13 +1,29 @@
 <!DOCTYPE html>
 <head>
+      <title>Aurora</title>
+      <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      <meta name="keywords" content="Aurora, staratosphre, weather, balloon, project, vrvarna, vr varna, peshigoshi, labcoin, Аврора, стратостат, метеорологичен, балон, стратосфера, пешигоши, VR варна, лабкойн">
+      <meta name="description" content='Сайт за наблюдение на полета на стратосферната сонда "Aurora", създадена от варненски ученици с подкрепа на VR varna и Godzilla'>
     <style>
         :root {
   --altitude:10000;
-  --font:4vw;
+  --font:min(5vw, 3vh);
   --yaw:0;
   --roll:0;
   --pitch:0;
 }
+        h1{
+            display: block;
+            text-align: center;
+            padding: calc(var(--font) / 2);
+        }
+        button{
+            background-color: black;
+            outline: none;
+            border: 1px solid #800;
+            padding: calc(var(--font)/2);
+            cursor: pointer;
+        }
         p{
             display: inline;
         }
@@ -25,6 +41,24 @@
             width: 100%;
             height: 100%;
             
+        }
+        .discription{
+            overflow:auto;
+            width: 100%;
+            scrollbar-color: red black;
+            scrollbar-width: thin;
+            line-height: 1.5;
+        }
+        .discription p{
+            display: block;
+            margin-bottom: var(--font);
+        }
+        .icon{
+            display: inline;
+            height: var(--font);
+            transform: translate(50%,12.5%) scale(1.9);
+            padding: 0px;
+            margin: 0px;
         }
         .menu{
             text-align: center;
@@ -47,7 +81,19 @@
             background: black;
             margin:0;     
             display:block;
-            padding: calc(var(--font) / 4);
+            padding: calc(var(--font) / 2);
+        }
+        .file{
+            display: flex;
+            border: 1px solid #800;
+            padding: calc(var(--font) / 2);
+            vertical-align: middle;
+            align-items:flex-start;
+        }
+        .file>*{
+            display: inline-block;
+            margin-top: auto;
+            margin-bottom: auto;
         }
         .altitudeContainer{
             background-color: black;
@@ -118,6 +164,7 @@
             background: black;
         }
         .window{
+            border: 1px solid red;
             padding: var(--font);
             position:fixed;
             top:0;
@@ -183,12 +230,13 @@
   --font:min(16px,1.5vw, 3vh);
 }
             .menu{
+                padding: calc(var(--font) / 2);
                 text-align: left;
                 border:0;
                 width:calc(100vw);
                 flex-direction:row;
   }
-       .menu a{
+       .menu>a, .menu>p{
             border:0;
             border-right: red solid 1px;
             padding-right: var(--font);
@@ -202,15 +250,19 @@
     </style>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+      <link rel="icon" type="image/x-icon" href="textures/favicon.ico">
 </head>
 <body style="margin: 0;padding: 0;">
     <canvas id="image"></canvas>
     <div class="menu">
-        <p class="en">Aurora data: </p><p class="bg">данни: </p>
+        <div><img src="textures/A.png" class="icon" alt="A"> uror<img src="textures/A.png" class="icon" alt="A">&nbsp
+        <p class="en"> 
+        data: </p>
+        <p class="bg"> данни: </p></div>
         <a onclick="windowShow(0)"><p class="en">diagrams</p><p class="bg">диаграми</p></a>
-        <a onclick="windowShow(2)"><p class="en">raw data file</p><p class="bg">сурови данни</p></a>
+        <a onclick="windowShow(2)"><p class="en">raw data files</p><p class="bg">сурови данни</p></a>
         <a onclick="windowShow(3)"><p class="en">Aurora observation</p><p class="bg">наблюдавай Аврора</p></a>
-        <a onclick="windowShow(1)"><p class="en">about mission</p><p class="bg">за полета</p></a>
+        <a onclick="windowShow(1)"><p class="en">about us</p><p class="bg">за нас</p></a>
         <select name="lang" id="lang">
         <option class="option" value="bg"><p>Български</p></option>
         <option class="option" value="en"><p>English</p></option>
@@ -224,9 +276,9 @@
         <div class="max marker">30000m</div>
         <div class="alt marker" id="marker">0m</div>
     </div>
-    <div class="angle"  style="top: calc(var(--font) * 7)"><div style='content: url("textures/redUp.png");transform: translate(50%,-50%) rotate(calc(var(--yaw) * 1deg));'></div></div>
-    <div class="angle"  style="top: calc(var(--font) * 17)"><div style='content: url("textures/redFront.png");transform: translate(50%,-50%) rotate(calc(var(--roll) * 1deg));'></div></div>
-    <div class="angle"  style="top: calc(var(--font) * 27)"><div style='content: url("textures/redSide.png");transform: translate(50%,-50%) rotate(calc(var(--pitch) * 1deg));'></div></div>
+    <div class="angle"  style="top: calc(var(--font) * 9)"><div style='content: url("textures/redUp.png");transform: translate(50%,-50%) rotate(calc(var(--yaw) * 1deg));'></div></div>
+    <div class="angle"  style="top: calc(var(--font) * 19)"><div style='content: url("textures/redFront.png");transform: translate(50%,-50%) rotate(calc(var(--roll) * 1deg));'></div></div>
+    <div class="angle"  style="top: calc(var(--font) * 29)"><div style='content: url("textures/redSide.png");transform: translate(50%,-50%) rotate(calc(var(--pitch) * 1deg));'></div></div>
     <div class="window" id="diagrams">
 
 
@@ -264,18 +316,26 @@
         </canvas></div>
         <a class="closer" onclick="windowClose()">X</a>
     </div>
-    <div class="window" id="about">
-	    
+    <div class="window" id="about" style="display: block;">
+        <div style="width:100%;height: 100%;display: flex;flex-direction: column;">
+	    <h1><p class="en">About us:</p><p class="bg">За нас:</p></h1>
+        <div class="discription">
+            Lorem ipsum, dolor sit amet consectetur adipisicing elit. Architecto excepturi reprehenderit soluta ipsam asperiores atque, iure ab dolore, dolorem accusantium quasi ipsa aliquam, impedit porro aperiam aut? Dicta eius praesentium voluptatibus dignissimos excepturi quam at velit quaerat, illum ut, neque nostrum rem! Voluptates fuga iusto doloribus <p>architecto excepturi nulla dolorum repellat qui eveniet cum molestiae iste minima dignissimos ipsam omnis autem quae aliquid quas libero porro eligendi, tenetur vel? Voluptate ipsa eos architecto ea est? Praesentium iste quasi non inventore! Omnis, dolore placeat. Deserunt excepturi nesciunt nulla eius ut voluptatum animi nemo nobis, temporibus repellendus totam. Numquam vel officiis vitae ad fugit deserunt alias earum quas, vero repellendus molestias minima itaque veritatis minus quia excepturi enim recusandae<p> ullam adipisci ipsum. Pariatur deserunt accusamus vero quibusdam repellat atque impedit maxime labore ducimus, quasi non minus doloribus odit harum laborum adipisci ex. Minima ratione sequi rerum, aperiam id commodi, harum pariatur nostrum nesciunt animi quia nam eligendi corrupti possimus qui dolores repellat repudiandae inventore non nisi accusamus! Iusto, molestiae architecto. Praesentium dignissimos, obcaecati harum id omnis distinctio quis non fugiat ipsam ab nihil laborum dolores. Nam suscipit maxime labore! At, odit beatae. Tempore at unde mollitia, officia numquam ex eius facere esse rem nihil nesciunt modi delectus sunt ad doloremque, deleniti ducimus sed. A maxime rem nisi quaerat animi dolore sequi dolorem eos, illo ipsum consequuntur reiciendis deleniti veniam dolor atque perferendis, cupiditate facilis molestiae exercitationem fugiat in autem ab! Odit voluptates quis voluptatibus dignissimos sunt suscipit omnis deserunt culpa asperiores commodi totam eveniet blanditiis, tenetur modi est, harum ipsum mollitia magnam error velit sequi. Omnis vel sint eius. Nemo quibusdam enim animi. Corporis, facilis sequi. Molestias, quo ipsa similique aliquam nemo ad distinctio modi quis quaerat ab non quas voluptatum, nesciunt reprehenderit minima quia tempora magni accusantium? A optio dignissimos odit deserunt, ipsum quasi provident corrupti recusandae. Placeat rerum beatae molestiae id illo odio sunt officiis? Nesciunt ullam nulla eveniet assumenda vel sequi itaque, ea odio neque enim ipsam, qui at quisquam magnam libero consequatur dignissimos corrupti alias quam, asperiores est ab nobis similique saepe? Harum aliquam, dolores voluptatum quod, fugiat ab eaque magni doloribus corporis saepe quam praesentium nulla, sunt laudantium vitae iste in fugit repellat eum doloremque non eius! Dolorem porro, dolor numquam rerum qui quidem impedit vitae distinctio? Quod unde repellat debitis dicta maxime illo aspernatur est, consequuntur repellendus. Rerum facilis provident, sit ipsa exercitationem quae nostrum rem! Illum distinctio amet illo dolor ad qui possimus, doloribus labore animi libero ratione, provident omnis consequatur voluptatum suscipit eaque quo corrupti quos veritatis nisi quibusdam at dignissimos. Omnis, fuga fugiat quos corporis reprehenderit hic natus quibusdam aperiam molestias est dolorum voluptas vero magnam tempore repudiandae suscipit necessitatibus quo quidem laboriosam repellendus, officia soluta inventore. Ipsum libero sit iure nemo quidem laudantium cumque repellat harum blanditiis ratione eveniet, explicabo sequi? Dolor, cupiditate aliquam! Laudantium consequatur, nihil commodi natus exercitationem corrupti nisi. Esse accusantium consequuntur officiis a odio quis reprehenderit. Molestiae, dolore recusandae et sequi cum vel nemo, quisquam voluptas quo commodi non amet sint officiis eos necessitatibus illum sed. Id harum quod porro doloribus reprehenderit dolore, ex non ipsam, sunt iure in dignissimos, molestias quia modi facilis omnis magni ab eos quas corporis? Necessitatibus, repellendus repudiandae eum sit libero perferendis, sequi temporibus architecto ipsa in tempore, ullam beatae qui veniam dolorem aperiam officiis consequatur quaerat. Quibusdam commodi voluptates nisi dolore similique nihil nostrum alias repellendus sunt porro soluta optio, assumenda pariatur necessitatibus iure sequi modi a nobis quas rerum officia enim. Cum sunt esse tenetur amet rem at facere officia officiis incidunt. Excepturi necessitatibus neque repellendus magnam, suscipit commodi quo dolorem at in aliquid. Cupiditate similique fuga consequuntur necessitatibus officiis? Molestias voluptas unde earum, iure est optio repellat laudantium porro consectetur itaque quidem iusto, doloribus, libero laborum nihil sapiente et! Delectus optio fugiat, aperiam temporibus ducimus distinctio iste quam. Aspernatur ab, atque adipisci corrupti ex excepturi quaerat corporis consequatur quis beatae, non mollitia vero quidem magni nostrum doloremque id aut similique necessitatibus, in iure eligendi nam! Similique doloribus, sit eligendi consequatur nisi expedita atque. Perspiciatis veritatis quisquam doloremque eaque fugiat nisi illum id atque! Exercitationem, neque reprehenderit dolorem, cum asperiores modi mollitia ipsum a commodi, iusto maiores officiis ad? Quidem a repellat consequatur qui porro enim nisi distinctio deleniti quos modi, autem amet eius perferendis. Rerum nostrum possimus modi ducimus fugiat? Expedita accusantium architecto voluptate quaerat omnis veritatis error in repellat minima eum? Neque, officiis perspiciatis dolorem animi optio, in error, autem molestiae enim quas amet suscipit fuga esse tempore adipisci aliquam temporibus cupiditate? Commodi laborum eligendi non natus atque nam earum doloribus in, distinctio facere explicabo neque ullam mollitia suscipit sapiente eum delectus eius ratione sequi. Pariatur, sequi repellendus dicta quod nam facere, ducimus, sint ad dolor impedit dolorem rem consectetur! Dolor nisi provident earum doloribus ducimus omnis minus necessitatibus cumque modi vel explicabo fugit, sequi maxime accusamus itaque voluptatem perspiciatis vitae dicta! Est officia similique aut vero sit minus ad! Porro, enim ipsa facilis delectus dignissimos odio autem magni sequi doloribus voluptatem sapiente quasi asperiores aspernatur aliquid expedita placeat neque perferendis officiis, iusto velit sed, quia reiciendis repellat? Neque necessitatibus facere, possimus laborum pariatur praesentium reiciendis fugiat maiores dolorum quos, odit, voluptatem dolorem. Magnam, dolorem. Libero repellendus qui delectus modi quos nisi blanditiis animi sint placeat quidem maxime tenetur accusantium asperiores, dolor earum molestiae rem eos magnam similique aperiam, sequi quae illo? Unde dolorem aut quam et. Corporis odit pariatur modi mollitia? Iure ducimus officia incidunt quae ab excepturi suscipit, velit omnis? Necessitatibus quibusdam modi quasi minus expedita quae magnam neque illum pariatur eveniet deserunt architecto sint eius enim impedit alias quidem aliquid saepe sunt consequatur vitae ducimus, blanditiis voluptate? Recusandae doloremque, vero consequuntur modi ducimus excepturi ab odio? Aspernatur nobis laudantium libero eos. Eaque porro ipsam voluptas expedita quisquam ratione ducimus, soluta consectetur veritatis aperiam quas nemo dolore omnis aut officiis. Illo maxime corporis, voluptas ipsum cum perferendis corrupti nostrum illum quos. Facere, voluptatibus delectus? Architecto, quae laboriosam necessitatibus nostrum repudiandae doloremque, iste, dolorem tenetur natus quis qui.
+            Lorem ipsum dolor sit amet consectetur adipisicing elit. Eum rerum mollitia minus nisi expedita. Commodi dignissimos aliquid quam inventore enim incidunt ex cumque? Modi dicta hic dolores, non aliquam totam unde enim repellendus! Pariatur repellendus, minima sapiente placeat dignissimos delectus! Nisi veniam recusandae molestiae esse ullam alias commodi quo deserunt dolorum impedit neque blanditiis quod quos iusto suscipit, unde laborum at autem, excepturi ipsum eius minus. Fugiat error eum quam illum labore recusandae at exercitationem pariatur. Placeat nobis laborum nemo, quam libero aliquam ut fugit rerum aspernatur temporibus fugiat dolores eveniet nesciunt incidunt doloribus recusandae ipsam et veritatis dicta tempora!
+Lorem ipsum dolor sit amet consectetur adipisicing elit. Ut tenetur eveniet voluptatibus qui reiciendis quibusdam numquam esse, quas, aperiam amet voluptas iure voluptate repellat aut quaerat corrupti alias suscipit tempore!
+        </div></div>
         <a class="closer" onclick="windowClose()">X</a>
     </div>
     <div class="window" id="rawDataWindow">
-	    <a id="csvFile"><p class="en">CSV sensor data table</p><p class="bg">Таблица с данни от сензори в CSV</p></a><br>
-        <p class="en">Flight video will exist after mission end</p><p class="bg">Очаквайте видео от полета след края на мисията</p>
+        <h1><p class="en">You can download some data from Aurora here:</p><p class="bg">Тук можете да изтетлите някои данни събрани от сондата:</p></h1>
+	    <a id="csvFile" class="file"><img src="textures/tableFile.png"> &nbsp;<p class="en">CSV sensor data table</p><p class="bg">Таблица с данни от сензори в CSV</p></a>
+        <a id="videoFile" class="file"><img src="textures/videoFile.png"> &nbsp;<p class="en">Flight video will exist after mission end</p><p class="bg">Очаквайте видео от полета след края на мисията</p></a>
         <a class="closer" onclick="windowClose()">X</a>
     </div>
     <div class="window" id="observationWindow">
-	<button onclick="setLocation()">use your location</button>
-        <div style="height: calc(100% - var(--font) * 5); width: calc(100% - var(--font) * 2); position: absolute;top: calc(var(--font) * 4); right: var(--font)" id="map2">
+	<h1><div style="display: inline-block;padding: calc(var(--font) / 2);"><p class="en">
+Where to watch to see Aurora from your location:</p><p class="bg">Накъде да гледате за да наблюдавате Aurora от вашето местоположение:&nbsp;</p></div><button onclick="setLocation()">use your location</button></h1>
+        <div style="height: calc(100% - var(--font) * 7); width: 100%;" id="map2">
         </div>
 
         <a class="closer" onclick="windowClose()">X</a>
