@@ -137,21 +137,21 @@
             bottom:calc(40vh / 30000 * var(--altitude));
         }
         .angle{
-            position: fixed;
             display: inline-block;
             background: url("textures/azimuth.png") calc(var(--font) * 16); 
             background-position: center;
             background-size: cover;
             transform: translate(50%,-50%); /*rotate(calc(var(--yaw) * 1deg)); */
-            width: calc(var(--font) * 12);
-            height: calc(var(--font) * 12);
-            right:calc(var(--font) * 6);
+            width: min(30vw,20vh);
+            height: min(30vw,20vh);
+            margin-top: min(15vw,10vh);
+            margin-right: min(15vw,10vh);
             z-index: 3;
         }
         .angle div{
             position: absolute;
             display: inline-block;
-            width: calc(var(--font) * 12);
+            width: min(30vw,20vh);
             top:50%;
             right:50%;
         }
@@ -276,9 +276,10 @@
         <div class="max marker">30000m</div>
         <div class="alt marker" id="marker">0m</div>
     </div>
-    <div class="angle"  style="top: calc(var(--font) * 9)"><div style='content: url("textures/redUp.png");transform: translate(50%,-50%) rotate(calc(var(--yaw) * 1deg));'></div></div>
-    <div class="angle"  style="top: calc(var(--font) * 19)"><div style='content: url("textures/redFront.png");transform: translate(50%,-50%) rotate(calc(var(--roll) * 1deg));'></div></div>
-    <div class="angle"  style="top: calc(var(--font) * 29)"><div style='content: url("textures/redSide.png");transform: translate(50%,-50%) rotate(calc(var(--pitch) * 1deg));'></div></div>
+    <div style="position: fixed; right: var(--font);display: flex;flex-direction: column;">
+    <div class="angle"><div style='content: url("textures/redUp.png");transform: translate(50%,-50%) rotate(calc(var(--yaw) * 1deg));'></div></div>
+    <div class="angle" ><div style='content: url("textures/redFront.png");transform: translate(50%,-50%) rotate(calc(var(--roll) * 1deg));'></div></div>
+    <div class="angle"><div style='content: url("textures/redSide.png");transform: translate(50%,-50%) rotate(calc(var(--pitch) * 1deg));'></div></div></div>
     <div class="window" id="diagrams">
 
 
