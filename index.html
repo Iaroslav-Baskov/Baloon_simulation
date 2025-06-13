@@ -6,11 +6,15 @@
       <meta name="description" content='Сайт за наблюдение на полета на стратосферната сонда "Aurora", създадена от варненски ученици с подкрепа на VR varna и Godzilla'>
     <style>
         :root {
-  --altitude:10000;
+  --altitude:15000;
   --font:min(5vw, 2vh);
   --yaw:0;
   --roll:0;
   --pitch:0;
+  --side:calc(min(30vw,23.33vh) + 2 * var(--font));
+  --altBarLength:calc(100vh - 2 * var(--font));
+  --maxAlt:40000;
+  --space:1000;
 }
         h1{
             display: block;
@@ -61,21 +65,26 @@
             margin: 0px;
         }
         .menu{
-            text-align: center;
+            cursor: pointer;
+            text-align: left;
             flex-direction:row;
             left:0;
             top:0;
             position: fixed;
-            width:40vw;
+            width:calc(100vw - var(--side));
             font-size: var(--font);
             flex-direction:column;
             display:flex;
             background-color: black;
             border-bottom: red solid 1px;
         }
-        .menu a{
+        .menu>a, .menu>select{
+            display: none;
             cursor:pointer;
             border-top: red solid 1px;
+        }
+        .menu:focus-within>a, .menu:focus-within>select{
+            display: inline-block;
         }
         .menu>*, select{      
             background: black;
@@ -84,6 +93,7 @@
             padding: calc(var(--font) / 2);
         }
         .file{
+            box-sizing: border-box;
             display: flex;
             border: 1px solid #800;
             padding: calc(var(--font) / 2);
@@ -96,21 +106,35 @@
             margin-bottom: auto;
         }
         .altitudeContainer{
-            background-color: black;
-            width:1vh;
-            height:60vh;
+            /*overflow:hidden;*/
+            display: flex;
+            flex-direction: column-reverse;
+            border-right: 1px solid red;
+            width:calc(var(--font) * 2);
+            height:var(--altBarLength);
             position: absolute;
-            bottom:5vh;
-            left: 1vh;
-
+            bottom:var(--font);
+            right: var(--font);
+        }
+        .altitudeContainer>.unit{
+            margin-left: auto;
+            width:10%;
+            border-bottom:1px solid red;
+            height: calc(var(--space) / var(--maxAlt) * var(--altBarLength));
+        }
+        .altitudeContainer>.unit>div{
+            position: absolute;
+            right: 0;
+            border-bottom:1px solid red;
+            height: calc(var(--space) / var(--maxAlt) * var(--altBarLength));
         }
         .marker{
-            left:2vh;
+            right:0;
             position:absolute;
             display:flex;
             font-size: var(--font);
         }
-        .marker::before{
+        .marker::after{
             display:inline-block;
             content: " ";
             width:0px;
@@ -118,35 +142,25 @@
             border:calc(var(--font) / 2) solid transparent;
             margin-right: calc(var(--font) / 4);
         }
-        .alt::before{
-            border-right:calc(var(--font) / 2) solid red;
-        }
-        .zero::before{
-            border-bottom:calc(var(--font) / 2) solid red;
-        }
-        .max::before{
-            border-top:calc(var(--font) / 2) solid red;
-        }
-        .zero{
-            bottom:0;
-        }
-        .max{
-            bottom:40vh;
+        .alt::after{
+            border-left:calc(var(--font) / 2) solid red;
         }
         .alt{
-            bottom:calc(40vh / 30000 * var(--altitude));
+            bottom:calc(var(--altBarLength) / var(--maxAlt) * var(--altitude));
         }
         .angle{
             display: inline-block;
+            position: relative;
             background: url("textures/azimuth.png") calc(var(--font) * 16); 
             background-position: center;
             background-size: cover;
             transform: translate(50%,-50%);
-            width: 100%;
-	    margin-top: 50%;
-	    margin-bottom: -50%;
+            left:var(--font);
+            bottom:var(--font);
+	        margin-top: 50%;
+	        margin-bottom: -50%;
             margin-right: 50%;
-	    margin-left: -50%;
+	        margin-left: -50%;
             z-index: 3;
 		
 		aspect-ratio: 1 / 1;
@@ -159,17 +173,21 @@
             right:50%;
         }
 	.anglecontainer{
+        box-sizing: border-box;
+        padding: calc(var(--font));
+        height: 100%;
 		position: fixed;
-		top:0;
+		bottom:0;
 		right: 0;
 		background:black;
-		height:min(90vw,70vh);
-		width:min(30vw,23vh);
-		
+		width:var(--side);
 	}
+    .anglecontainer>div{
+            width: calc(100% - 2 * var(--font));
+    }
         .map{
             position: fixed;
-            width: 100vw;
+            width: calc(100vw - var(--side));
             height: 30vh;
             bottom:0;
             left:0;
@@ -183,7 +201,7 @@
             left: 0;
             background-color: black;
             width: 100vw;
-            height:calc(100vh - 2 * var(--font));
+            height:100vh;
             z-index: 4;
             display: none;
             box-sizing:border-box;
@@ -226,23 +244,12 @@
         }
 
         @media (orientation: landscape) {
-		.anglecontainer{
-		height:100%;
-	}
-            .map{
-
-            width: calc(100vw - var(--font) * 20);
-            left:calc(calc(var(--font) * 8));
-        }
-        .window{
-            top: calc(2 * var(--font));
-            left: calc(2 * var(--font));
-            width: calc(100vw - var(--font) * 20);
-            height:calc(100vh - 4 * var(--font));
-            left:calc(calc(var(--font) * 8));
-        }
+            .anglecontainer{
+                height: calc(100% - 3 * var(--font));
+                bottom: 0;
+            }
             :root {
-  --font:min(16px,1.5vw, 3vh);
+  --font:min(16px,1.3vw, 3vh);
 }
             .menu{
                 padding: calc(var(--font) / 2);
@@ -251,6 +258,9 @@
                 width:calc(100vw);
                 flex-direction:row;
   }
+          .menu>a, .menu>select{
+            display: block;
+        }
        .menu>a, .menu>p{
             border:0;
             border-right: red solid 1px;
@@ -269,16 +279,14 @@
 </head>
 <body style="margin: 0;padding: 0;">
     <canvas id="image"></canvas>
-    <div class="menu">
-        <div><img src="textures/A.png" class="icon" alt="A"> uror<img src="textures/A.png" class="icon" alt="A">&nbsp
-        <p class="en"> 
-        data: </p>
-        <p class="bg"> данни: </p></div>
-        <a onclick="windowShow(0)"><p class="en">diagrams</p><p class="bg">диаграми</p></a>
-        <a onclick="windowShow(2)"><p class="en">raw data files</p><p class="bg">сурови данни</p></a>
-        <a onclick="windowShow(3)"><p class="en">Aurora observation</p><p class="bg">наблюдавай Аврора</p></a>
-        <a onclick="windowShow(1)"><p class="en">about us</p><p class="bg">за нас</p></a>
-        <select name="lang" id="lang">
+    <div class="menu" tabindex="1">
+        <div><img src="textures/A.png" class="icon" alt="A"> uror<img src="textures/A.png" class="icon" alt="A">&nbsp&nbsp</div>
+        <a onclick="windowShow(0)"><img src="textures/diagrams.png" class="icon">&nbsp;&nbsp;&nbsp;<p class="en">diagrams</p><p class="bg">диаграми</p></a>
+        <a onclick="windowShow(2)"><img src="textures/downloadFile.png" class="icon">&nbsp;&nbsp;<p class="en">raw data files</p><p class="bg">сурови данни</p></a>
+        <a onclick="windowShow(3)"><img src="textures/observation.png" class="icon">&nbsp;&nbsp;&nbsp;<p class="en">Aurora observation</p><p class="bg">наблюдавай Аврора</p></a>
+        <a onclick="windowShow(1)"><img src="textures/us.png" class="icon">&nbsp;&nbsp;&nbsp;<p class="en">about us</p><p class="bg">за нас</p></a>
+        <a onclick="windowShow(4)"><img src="textures/phone.png" class="icon">&nbsp;<p class="en">contacts</p><p class="bg">контакти</p></a>
+        <select name="lang" id="lang" tabindex="2">
         <option class="option" value="bg"><p>Български</p></option>
         <option class="option" value="en"><p>English</p></option>
 </select>
@@ -286,15 +294,60 @@
         <div class="map" id="map">
 
         </div>
-    <div class="altitudeContainer">
-        <div class="zero marker">0m</div>
-        <div class="max marker">30000m</div>
-        <div class="alt marker" id="marker">0m</div>
-    </div>
     <div class="anglecontainer">
     <div class="angle"><div style='content: url("textures/redUp.png");transform: translate(50%,-50%) rotate(calc(var(--yaw) * 1deg));'></div></div>
     <div class="angle" ><div style='content: url("textures/redFront.png");transform: translate(50%,-50%) rotate(calc(var(--roll) * 1deg));'></div></div>
-    <div class="angle"><div style='content: url("textures/redSide.png");transform: translate(50%,-50%) rotate(calc(var(--pitch) * 1deg));'></div></div></div>
+    <div class="angle"><div style='content: url("textures/redSide.png");transform: translate(50%,-50%) rotate(calc(var(--pitch) * 1deg));'></div></div>
+        
+        <div class="file" id="rssi">rssi: -50db</div>
+        <div class="file" id="snr">snr: 10db</div>
+        <div class="file" id="2g">2G: 10</div>
+    <div class="altitudeContainer">
+        <div class="alt marker" id="marker">
+        </div>
+        <div class="unit"><div>0km</div></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"><div>10km</div></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"><div>20km</div></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"><div>30km</div></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+        <div class="unit"></div>
+    </div>
+    </div>
     <div class="window" id="diagrams">
 
 
