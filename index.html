@@ -60,10 +60,10 @@
         }
         .icon{
             display: inline;
-            height: var(--font);
-            transform: translate(50%,12.5%) scale(1.9);
+            height: calc(var(--font) * 2);
+            margin-top: calc(0px - var(--font) / 2);
+            margin-bottom: calc(0px - var(--font) / 2);
             padding: 0px;
-            margin: 0px;
         }
         .menu{
             cursor: pointer;
@@ -260,7 +260,7 @@
             outline:  none;
         }
         .downarrow{
-            transform: scale(2) scaleY(-1);
+            transform: scaleY(-1);
             position: absolute;
             right: var(--font);
         }
@@ -304,13 +304,13 @@
 <body style="margin: 0;padding: 0;">
     <canvas id="image"></canvas>
     <div class="menu" tabindex="1">
-        <div><img src="textures/A.png" class="icon" alt="A"> uror<img src="textures/A.png" class="icon" alt="A">&nbsp&nbsp
+        <div><img src="textures/favicon.ico" class="icon" alt="A"> Aurora
         <img src="textures/A.png" class="icon downarrow"></div>
-        <a onclick="windowShow(0)"><img src="textures/diagrams.png" class="icon">&nbsp;&nbsp;&nbsp;<p class="en">diagrams</p><p class="bg">диаграми</p></a>
-        <a onclick="windowShow(2)"><img src="textures/downloadFile.png" class="icon">&nbsp;&nbsp;<p class="en">raw data files</p><p class="bg">сурови данни</p></a>
-        <a onclick="windowShow(3)"><img src="textures/observation.png" class="icon">&nbsp;&nbsp;&nbsp;<p class="en">Aurora observation</p><p class="bg">наблюдавай Аврора</p></a>
-        <a onclick="windowShow(1)"><img src="textures/us.png" class="icon">&nbsp;&nbsp;&nbsp;<p class="en">about us</p><p class="bg">за нас</p></a>
-        <a onclick="windowShow(4)"><img src="textures/phone.png" class="icon">&nbsp;<p class="en">contacts</p><p class="bg">контакти</p></a>
+        <a onclick="windowShow(0)"><img src="textures/diagrams.png" class="icon"> <p class="en">diagrams</p><p class="bg">диаграми</p></a>
+        <a onclick="windowShow(2)"><img src="textures/downloadFile.png" class="icon"> <p class="en">raw data files</p><p class="bg">сурови данни</p></a>
+        <a onclick="windowShow(3)"><img src="textures/observation.png" class="icon"> <p class="en">Aurora observation</p><p class="bg">наблюдавай Аврора</p></a>
+        <a onclick="windowShow(1)"><img src="textures/us.png" class="icon"> <p class="en">about us</p><p class="bg">за нас</p></a>
+        <a onclick="windowShow(4)"><img src="textures/phone.png" class="icon"> <p class="en">contacts</p><p class="bg">контакти</p></a>
         <select name="lang" id="lang" tabindex="2">
         <option class="option" value="bg"><p>Български</p></option>
         <option class="option" value="en"><p>English</p></option>
@@ -409,7 +409,7 @@
         </canvas></div>
         <a class="closer" onclick="windowClose()">X</a>
     </div>
-    <div class="window" id="about" style="display: block;">
+    <div class="window" id="about">
         <div style="width:100%;height: 100%;display: flex;flex-direction: column;">
 	    <h1><p class="en">About us:</p><p class="bg">За нас:</p></h1>
         <div class="discription">
