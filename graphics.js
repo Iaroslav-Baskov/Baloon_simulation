@@ -219,6 +219,8 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
   function drawWorld(){
           var a=Math.sin(data.time/1000/3600/24%1*2*Math.PI-Math.PI/2);
           sunY=height/2-45*a/aHeight*height;
+          document.getElementById("rssi").innerText="rssi:" + data.rssi + "db";
+          document.getElementById("snr").innerText="snr:" + data.snr + "db";
     horyzont=Math.acos(R/(R+data["altitude"]))/Math.PI*180;
     var horyzontH=Math.floor(horyzont*height/aHeight+height/2);
     ctx.drawImage(sky,0,0,width,sky.height/sky.width*width);
@@ -233,7 +235,6 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
     root.style.setProperty('--yaw', yaw/Math.PI*180);
     root.style.setProperty('--roll', roll/Math.PI*180);
     root.style.setProperty('--pitch', pitch/Math.PI*180);
-    altMarker.innerText=Math.floor(data.altitude)+"m";
     var cloudN0=2;
     var cloudN1=5;
     var cloudN2=25;
@@ -450,7 +451,12 @@ myChart.options.scales.y={title:{
 
 
 
-var windows=[document.getElementById("diagrams"),document.getElementById("about"),document.getElementById("rawDataWindow"),document.getElementById("observationWindow")];
+var windows=[
+  document.getElementById("diagrams"),
+  document.getElementById("about"),
+  document.getElementById("rawDataWindow"),
+  document.getElementById("observationWindow"),
+  document.getElementById("contacts")];
         function windowShow(n){
             windowClose();
             windows[n].style.display="block";
