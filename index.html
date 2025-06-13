@@ -11,11 +11,12 @@
   --yaw:0;
   --roll:0;
   --pitch:0;
-  --side:calc(min(30vw,23.33vh) + 2 * var(--font));
+  --side:calc(var(--font) * 5 );
   --altBarLength:calc(100vh - 2 * var(--font));
   --maxAlt:40000;
   --space:1000;
 }
+
         h1{
             display: block;
             text-align: center;
@@ -173,6 +174,7 @@
             right:50%;
         }
 	.anglecontainer{
+        overflow: hidden;
         box-sizing: border-box;
         padding: calc(var(--font));
         height: 100%;
@@ -181,10 +183,25 @@
 		right: 0;
 		background:black;
 		width:var(--side);
+        transition-duration: 0.5s;
 	}
-    .anglecontainer>div{
-            width: calc(100% - 2 * var(--font));
+    .anglecontainer>div:not(.altitudeContainer):not(.anglecontainer:focus-within>div:not(.altitudeContainer)){
+        width: 0;
+        border:0px;
+        overflow: hidden ;
+        padding: 0;
+        transition-duration: 0.5s;
+    } .anglecontainer:focus-within>div:not(.altitudeContainer){
+        transition-duration: 0.5s;
     }
+    .anglecontainer>div:not(.altitudeContainer){
+        width: calc(100% - 2 * var(--font));
+        transition-duration: 0.5s;
+    }
+    .anglecontainer:focus-within{
+        transition-duration: 0.5s;
+  width:calc(min(30vw,23.33vh) + 2 * var(--font));
+}
         .map{
             position: fixed;
             width: calc(100vw - var(--side));
@@ -242,12 +259,19 @@
             display: inline-block;
             outline:  none;
         }
-
+        .downarrow{
+            transform: scale(2) scaleY(-1);
+            position: absolute;
+            right: var(--font);
+        }
         @media (orientation: landscape) {
             .anglecontainer{
                 height: calc(100% - 3 * var(--font));
                 bottom: 0;
             }
+            .downarrow{
+           display: none;
+        }
             :root {
   --font:min(16px,1.3vw, 3vh);
 }
@@ -280,7 +304,8 @@
 <body style="margin: 0;padding: 0;">
     <canvas id="image"></canvas>
     <div class="menu" tabindex="1">
-        <div><img src="textures/A.png" class="icon" alt="A"> uror<img src="textures/A.png" class="icon" alt="A">&nbsp&nbsp</div>
+        <div><img src="textures/A.png" class="icon" alt="A"> uror<img src="textures/A.png" class="icon" alt="A">&nbsp&nbsp
+        <img src="textures/A.png" class="icon downarrow"></div>
         <a onclick="windowShow(0)"><img src="textures/diagrams.png" class="icon">&nbsp;&nbsp;&nbsp;<p class="en">diagrams</p><p class="bg">диаграми</p></a>
         <a onclick="windowShow(2)"><img src="textures/downloadFile.png" class="icon">&nbsp;&nbsp;<p class="en">raw data files</p><p class="bg">сурови данни</p></a>
         <a onclick="windowShow(3)"><img src="textures/observation.png" class="icon">&nbsp;&nbsp;&nbsp;<p class="en">Aurora observation</p><p class="bg">наблюдавай Аврора</p></a>
@@ -294,14 +319,13 @@
         <div class="map" id="map">
 
         </div>
-    <div class="anglecontainer">
+    <div class="anglecontainer" tabindex="1">
     <div class="angle"><div style='content: url("textures/redUp.png");transform: translate(50%,-50%) rotate(calc(var(--yaw) * 1deg));'></div></div>
     <div class="angle" ><div style='content: url("textures/redFront.png");transform: translate(50%,-50%) rotate(calc(var(--roll) * 1deg));'></div></div>
     <div class="angle"><div style='content: url("textures/redSide.png");transform: translate(50%,-50%) rotate(calc(var(--pitch) * 1deg));'></div></div>
         
         <div class="file" id="rssi">rssi: -50db</div>
         <div class="file" id="snr">snr: 10db</div>
-        <div class="file" id="2g">2G: 10</div>
     <div class="altitudeContainer">
         <div class="alt marker" id="marker">
         </div>
@@ -408,6 +432,10 @@ Where to watch to see Aurora from your location:</p><p class="bg">Накъде �
         </div>
 
         <a class="closer" onclick="windowClose()">X</a>
+    </div>
+    <div class="window" id="contacts">
+	<a class="file" href="tel:+359877914275"><img src="textures/phone.png"><div>&nbsp;: +359877914275</div></a>
+    <a class="closer" onclick="windowClose()">X</a>
     </div>
 </body>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
