@@ -40,11 +40,11 @@ var data={
 var limits={
   lat:{max:90, min:-90, exceptions:[0]},
   lon:{max:180, min:-180, exceptions:[0]},
-  altitude:{max:100000, min:-1000, exceptions:[]},
+  altitude:{max:100000, min:-1000, exceptions:[0]},
   AHT_temp:{max:60, min:-80, exceptions:[]},
   BMP_temp:{max:60, min:-80, exceptions:[]},
   gtemp:{max:60, min:-80, exceptions:[]},
-  volt:{max:5, min:0, exceptions:[]},
+  volt:{max:5, min:0, exceptions:[0]},
   AHT_hum:{max:100, min:0, exceptions:[]},
   BMP_pres:{max:200000, min:3000, exceptions:[]},
   pm1_0:{max:300, min:0, exceptions:[]},
@@ -584,7 +584,7 @@ function filter(json,limits){
         ok=false;
       }
       for(var i=0;i<limits[parameter].exceptions.length;i++){
-        if(value==limits[parameter].exceptions[i]){
+        if(Math.floor(value*10**10)==Math.floor(limits[parameter].exceptions[i]*10**10)){
           ok=false;
         }
       }}
