@@ -595,3 +595,19 @@ function filter(json,limits){
   }
   return output;
 }
+  socket.onerror = (error) => {
+    console.warn("⚠️ WebSocket error:", error);
+    socket.close(); // optional
+  };
+
+  socket.onclose = (event) => {
+    const socket = new WebSocket("wss://confine.kolevi.net/ws");
+    socket.addEventListener("open", (event) => {
+      console.log("Connected");
+      socket.send("listen");
+      socket.addEventListener("message", (event) => {
+  			console.log(event.data);
+        update(JSON.parse(event.data));
+    });
+  });
+  };
