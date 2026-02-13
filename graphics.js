@@ -1,3 +1,6 @@
+var redColor="#FFF";
+var redColor2="#888";
+
 const canvas=document.getElementById("image");
 const diagramsIm=document.getElementById("diagramsIm");
 diagramsIm.width=diagramsIm.clientWidth;
@@ -109,7 +112,7 @@ var allData=[
   {AHT_temp:[]}
 ];
 async function startData() {
-  const url = "https://confine.kolevi.net/aurora/log.txt"
+  const url = "https://aurora.stratostat.com//log.txt"
 try {
     const response = await fetch(url, {cache: "no-store"}).then((response) => response.text()).then((text) => {
         text = text.slice(0, text.length-2) + "}";
@@ -143,7 +146,7 @@ function makeNoise(context) {
   context.putImageData(imgd, 0, 0);
   noiseTime  = (noiseTime  + 1) % canvas.height;
   ctx.font = Math.floor(1/aWidth*width*5)+"px myFont";
-  ctx.fillStyle="red";
+  ctx.fillStyle="BLACK";
   ctx.textBaseline = "middle";
   ctx.textAlign = "center";
   ctx.fillText("waiting", width/2,height/2-0.5/aWidth*width*5);
@@ -267,7 +270,7 @@ startData();
   terrain[terrain.length-1].onload=function(){
 
     
-    const socket = new WebSocket("wss://confine.kolevi.net/ws");
+    const socket = new WebSocket("ws://79.100.175.98:1560");
 
     socket.addEventListener("open", (event) => {
       console.log("Connected");
@@ -393,11 +396,11 @@ langSelect.onchange=function(){
 }
 var myChart;
 var font=parseFloat(getComputedStyle(document.body).getPropertyValue('font-size'));
-Chart.defaults.plugins.legend.labels.color = "#F00";
-Chart.defaults.scale.border.color="#800";
-Chart.defaults.scale.grid.color="#800";
-Chart.defaults.plugins.title.color = "#F00"
-Chart.defaults.scale.ticks.color = "#F00";
+Chart.defaults.plugins.legend.labels.color = redColor;
+Chart.defaults.scale.border.color=redColor2;
+Chart.defaults.scale.grid.color=redColor2;
+Chart.defaults.plugins.title.color = redColor
+Chart.defaults.scale.ticks.color = redColor;
 Chart.defaults.font = {
   size: font,
   family: 'myFont',
@@ -439,7 +442,7 @@ myChart.data.datasets=dsets;
 myChart.options.scales.x={title:{
                   display: true,
                   text: xName,
-                  color: "#F00"
+                  color: redColor
                 },
                 ticks: {
                     callback: function(value, index, ticks) {
@@ -449,7 +452,7 @@ myChart.options.scales.x={title:{
 myChart.options.scales.y={title:{
                   display: true,
                   text: yName,
-                  color: "#F00"
+                  color: redColor
                 },
                 ticks: {
                     callback: function(value, index, ticks) {

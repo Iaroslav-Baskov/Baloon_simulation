@@ -11,11 +11,19 @@
   --yaw:0;
   --roll:0;
   --pitch:0;
-  --side:calc(var(--font) * 5 );
+  --side:calc(var(--font) * 3 );
   --altBarLength:calc(100vh - 2 * var(--font));
   --maxAlt:40000;
   --space:1000;
+  --red:white;
+  --darkred:#888;
 }
+        img, .angle{
+            filter:hue-rotate(0deg) saturate(0%) brightness(300%);
+        }
+        .angle{
+            filter:hue-rotate(0deg) saturate(0%) brightness(300%);
+        }
 
         h1{
             display: block;
@@ -25,7 +33,7 @@
         button{
             background-color: black;
             outline: none;
-            border: 1px solid #800;
+            border: 1px solid var(--darkred);
             padding: calc(var(--font)/2);
             cursor: pointer;
         }
@@ -35,7 +43,7 @@
         body *, body{
             font-family: 'myFont'!important;
             font-size: var(--font);
-            color: red;
+            color: var(--red);
             text-decoration: none;
         }
         body>canvas{
@@ -50,7 +58,7 @@
         .discription{
             overflow:auto;
             width: 100%;
-            scrollbar-color: red black;
+            scrollbar-color: var(--red) black;
             scrollbar-width: thin;
             line-height: 1.5;
         }
@@ -77,12 +85,12 @@
             flex-direction:column;
             display:flex;
             background-color: black;
-            border-bottom: red solid 1px;
+            border-bottom: var(--red) solid 1px;
         }
         .menu>a, .menu>select{
             display: none;
             cursor:pointer;
-            border-top: red solid 1px;
+            border-top: var(--red) solid 1px;
         }
         .menu:focus-within>a, .menu:focus-within>select{
             display: inline-block;
@@ -96,7 +104,7 @@
         .file{
             box-sizing: border-box;
             display: flex;
-            border: 1px solid #800;
+            border: 1px solid var(--darkred);
             padding: calc(var(--font) / 2);
             vertical-align: middle;
             align-items:flex-start;
@@ -110,7 +118,7 @@
             /*overflow:hidden;*/
             display: flex;
             flex-direction: column-reverse;
-            border-right: 1px solid red;
+            border-right: 1px solid var(--red);
             width:calc(var(--font) * 2);
             height:var(--altBarLength);
             position: absolute;
@@ -120,13 +128,13 @@
         .altitudeContainer>.unit{
             margin-left: auto;
             width:10%;
-            border-bottom:1px solid red;
+            border-bottom:1px solid var(--red);
             height: calc(var(--space) / var(--maxAlt) * var(--altBarLength));
         }
         .altitudeContainer>.unit>div{
             position: absolute;
             right: 0;
-            border-bottom:1px solid red;
+            border-bottom:1px solid var(--red);
             height: calc(var(--space) / var(--maxAlt) * var(--altBarLength));
         }
         .marker{
@@ -144,7 +152,7 @@
             margin-right: calc(var(--font) / 4);
         }
         .alt::after{
-            border-left:calc(var(--font) / 2) solid red;
+            border-left:calc(var(--font) / 2) solid var(--red);
         }
         .alt{
             bottom:calc(var(--altBarLength) / var(--maxAlt) * var(--altitude));
@@ -152,7 +160,7 @@
         .angle{
             display: inline-block;
             position: relative;
-            background: url("textures/azimuth.png") calc(var(--font) * 16); 
+            background: url("textures/azimuth.png") calc(var(--font) * 16);
             background-position: center;
             background-size: cover;
             transform: translate(50%,-50%);
@@ -163,7 +171,7 @@
             margin-right: 50%;
 	        margin-left: -50%;
             z-index: 3;
-		
+            
 		aspect-ratio: 1 / 1;
         }
         .angle div{
@@ -211,7 +219,7 @@
             background: black;
         }
         .window{
-            border: 1px solid red;
+            border: 1px solid var(--red);
             padding: var(--font);
             position:fixed;
             top:0;
@@ -248,14 +256,14 @@
             display:block;
             padding: calc(var(--font) / 2);
             position: absolute;
-            background: red;
+            background: var(--red);
             color:black;
             top:0;
             right:0;
             cursor: pointer;
         }
         select, select *{
-            border: 1px solid #800 ;
+            border: 1px solid var(--darkred) ;
             display: inline-block;
             outline:  none;
         }
@@ -287,7 +295,7 @@
         }
        .menu>a, .menu>p{
             border:0;
-            border-right: red solid 1px;
+            border-right: var(--red) solid 1px;
             padding-right: var(--font);
             padding-left: var(--font);
         }
@@ -329,7 +337,7 @@
     <div class="altitudeContainer">
         <div class="alt marker" id="marker">
         </div>
-        <div class="unit"><div>0km</div></div>
+        <div class="unit"><div>0</div></div>
         <div class="unit"></div>
         <div class="unit"></div>
         <div class="unit"></div>
@@ -339,7 +347,7 @@
         <div class="unit"></div>
         <div class="unit"></div>
         <div class="unit"></div>
-        <div class="unit"><div>10km</div></div>
+        <div class="unit"><div>10</div></div>
         <div class="unit"></div>
         <div class="unit"></div>
         <div class="unit"></div>
@@ -349,7 +357,7 @@
         <div class="unit"></div>
         <div class="unit"></div>
         <div class="unit"></div>
-        <div class="unit"><div>20km</div></div>
+        <div class="unit"><div>20</div></div>
         <div class="unit"></div>
         <div class="unit"></div>
         <div class="unit"></div>
@@ -359,14 +367,14 @@
         <div class="unit"></div>
         <div class="unit"></div>
         <div class="unit"></div>
-        <div class="unit"><div>30km</div></div>
+        <div class="unit"><div>30</div></div>
         <div class="unit"></div>
         <div class="unit"></div>
         <div class="unit"></div>
         <div class="unit"></div>
         <div class="unit"></div>
         <div class="unit"></div>
-        <div class="unit"><div>&#8592;more&nbsp;</div></div>
+        <div class="unit"><div>km</div></div>
         <div class="unit"></div>
         <div class="unit"></div>
         <div class="unit"></div>
@@ -411,12 +419,12 @@
     </div>
     <div class="window" id="about">
         <div style="width:100%;height: 100%;display: flex;flex-direction: column;">
-	    <h1><p class="en">About us:</p><p class="bg">За нас:</p></h1>
         <div class="discription">
-            Lorem ipsum, dolor sit amet consectetur adipisicing elit. Architecto excepturi reprehenderit soluta ipsam asperiores atque, iure ab dolore, dolorem accusantium quasi ipsa aliquam, impedit porro aperiam aut? Dicta eius praesentium voluptatibus dignissimos excepturi quam at velit quaerat, illum ut, neque nostrum rem! Voluptates fuga iusto doloribus <p>architecto excepturi nulla dolorum repellat qui eveniet cum molestiae iste minima dignissimos ipsam omnis autem quae aliquid quas libero porro eligendi, tenetur vel? Voluptate ipsa eos architecto ea est? Praesentium iste quasi non inventore! Omnis, dolore placeat. Deserunt excepturi nesciunt nulla eius ut voluptatum animi nemo nobis, temporibus repellendus totam. Numquam vel officiis vitae ad fugit deserunt alias earum quas, vero repellendus molestias minima itaque veritatis minus quia excepturi enim recusandae<p> ullam adipisci ipsum. Pariatur deserunt accusamus vero quibusdam repellat atque impedit maxime labore ducimus, quasi non minus doloribus odit harum laborum adipisci ex. Minima ratione sequi rerum, aperiam id commodi, harum pariatur nostrum nesciunt animi quia nam eligendi corrupti possimus qui dolores repellat repudiandae inventore non nisi accusamus! Iusto, molestiae architecto. Praesentium dignissimos, obcaecati harum id omnis distinctio quis non fugiat ipsam ab nihil laborum dolores. Nam suscipit maxime labore! At, odit beatae. Tempore at unde mollitia, officia numquam ex eius facere esse rem nihil nesciunt modi delectus sunt ad doloremque, deleniti ducimus sed. A maxime rem nisi quaerat animi dolore sequi dolorem eos, illo ipsum consequuntur reiciendis deleniti veniam dolor atque perferendis, cupiditate facilis molestiae exercitationem fugiat in autem ab! Odit voluptates quis voluptatibus dignissimos sunt suscipit omnis deserunt culpa asperiores commodi totam eveniet blanditiis, tenetur modi est, harum ipsum mollitia magnam error velit sequi. Omnis vel sint eius. Nemo quibusdam enim animi. Corporis, facilis sequi. Molestias, quo ipsa similique aliquam nemo ad distinctio modi quis quaerat ab non quas voluptatum, nesciunt reprehenderit minima quia tempora magni accusantium? A optio dignissimos odit deserunt, ipsum quasi provident corrupti recusandae. Placeat rerum beatae molestiae id illo odio sunt officiis? Nesciunt ullam nulla eveniet assumenda vel sequi itaque, ea odio neque enim ipsam, qui at quisquam magnam libero consequatur dignissimos corrupti alias quam, asperiores est ab nobis similique saepe? Harum aliquam, dolores voluptatum quod, fugiat ab eaque magni doloribus corporis saepe quam praesentium nulla, sunt laudantium vitae iste in fugit repellat eum doloremque non eius! Dolorem porro, dolor numquam rerum qui quidem impedit vitae distinctio? Quod unde repellat debitis dicta maxime illo aspernatur est, consequuntur repellendus. Rerum facilis provident, sit ipsa exercitationem quae nostrum rem! Illum distinctio amet illo dolor ad qui possimus, doloribus labore animi libero ratione, provident omnis consequatur voluptatum suscipit eaque quo corrupti quos veritatis nisi quibusdam at dignissimos. Omnis, fuga fugiat quos corporis reprehenderit hic natus quibusdam aperiam molestias est dolorum voluptas vero magnam tempore repudiandae suscipit necessitatibus quo quidem laboriosam repellendus, officia soluta inventore. Ipsum libero sit iure nemo quidem laudantium cumque repellat harum blanditiis ratione eveniet, explicabo sequi? Dolor, cupiditate aliquam! Laudantium consequatur, nihil commodi natus exercitationem corrupti nisi. Esse accusantium consequuntur officiis a odio quis reprehenderit. Molestiae, dolore recusandae et sequi cum vel nemo, quisquam voluptas quo commodi non amet sint officiis eos necessitatibus illum sed. Id harum quod porro doloribus reprehenderit dolore, ex non ipsam, sunt iure in dignissimos, molestias quia modi facilis omnis magni ab eos quas corporis? Necessitatibus, repellendus repudiandae eum sit libero perferendis, sequi temporibus architecto ipsa in tempore, ullam beatae qui veniam dolorem aperiam officiis consequatur quaerat. Quibusdam commodi voluptates nisi dolore similique nihil nostrum alias repellendus sunt porro soluta optio, assumenda pariatur necessitatibus iure sequi modi a nobis quas rerum officia enim. Cum sunt esse tenetur amet rem at facere officia officiis incidunt. Excepturi necessitatibus neque repellendus magnam, suscipit commodi quo dolorem at in aliquid. Cupiditate similique fuga consequuntur necessitatibus officiis? Molestias voluptas unde earum, iure est optio repellat laudantium porro consectetur itaque quidem iusto, doloribus, libero laborum nihil sapiente et! Delectus optio fugiat, aperiam temporibus ducimus distinctio iste quam. Aspernatur ab, atque adipisci corrupti ex excepturi quaerat corporis consequatur quis beatae, non mollitia vero quidem magni nostrum doloremque id aut similique necessitatibus, in iure eligendi nam! Similique doloribus, sit eligendi consequatur nisi expedita atque. Perspiciatis veritatis quisquam doloremque eaque fugiat nisi illum id atque! Exercitationem, neque reprehenderit dolorem, cum asperiores modi mollitia ipsum a commodi, iusto maiores officiis ad? Quidem a repellat consequatur qui porro enim nisi distinctio deleniti quos modi, autem amet eius perferendis. Rerum nostrum possimus modi ducimus fugiat? Expedita accusantium architecto voluptate quaerat omnis veritatis error in repellat minima eum? Neque, officiis perspiciatis dolorem animi optio, in error, autem molestiae enim quas amet suscipit fuga esse tempore adipisci aliquam temporibus cupiditate? Commodi laborum eligendi non natus atque nam earum doloribus in, distinctio facere explicabo neque ullam mollitia suscipit sapiente eum delectus eius ratione sequi. Pariatur, sequi repellendus dicta quod nam facere, ducimus, sint ad dolor impedit dolorem rem consectetur! Dolor nisi provident earum doloribus ducimus omnis minus necessitatibus cumque modi vel explicabo fugit, sequi maxime accusamus itaque voluptatem perspiciatis vitae dicta! Est officia similique aut vero sit minus ad! Porro, enim ipsa facilis delectus dignissimos odio autem magni sequi doloribus voluptatem sapiente quasi asperiores aspernatur aliquid expedita placeat neque perferendis officiis, iusto velit sed, quia reiciendis repellat? Neque necessitatibus facere, possimus laborum pariatur praesentium reiciendis fugiat maiores dolorum quos, odit, voluptatem dolorem. Magnam, dolorem. Libero repellendus qui delectus modi quos nisi blanditiis animi sint placeat quidem maxime tenetur accusantium asperiores, dolor earum molestiae rem eos magnam similique aperiam, sequi quae illo? Unde dolorem aut quam et. Corporis odit pariatur modi mollitia? Iure ducimus officia incidunt quae ab excepturi suscipit, velit omnis? Necessitatibus quibusdam modi quasi minus expedita quae magnam neque illum pariatur eveniet deserunt architecto sint eius enim impedit alias quidem aliquid saepe sunt consequatur vitae ducimus, blanditiis voluptate? Recusandae doloremque, vero consequuntur modi ducimus excepturi ab odio? Aspernatur nobis laudantium libero eos. Eaque porro ipsam voluptas expedita quisquam ratione ducimus, soluta consectetur veritatis aperiam quas nemo dolore omnis aut officiis. Illo maxime corporis, voluptas ipsum cum perferendis corrupti nostrum illum quos. Facere, voluptatibus delectus? Architecto, quae laboriosam necessitatibus nostrum repudiandae doloremque, iste, dolorem tenetur natus quis qui.
-            Lorem ipsum dolor sit amet consectetur adipisicing elit. Eum rerum mollitia minus nisi expedita. Commodi dignissimos aliquid quam inventore enim incidunt ex cumque? Modi dicta hic dolores, non aliquam totam unde enim repellendus! Pariatur repellendus, minima sapiente placeat dignissimos delectus! Nisi veniam recusandae molestiae esse ullam alias commodi quo deserunt dolorum impedit neque blanditiis quod quos iusto suscipit, unde laborum at autem, excepturi ipsum eius minus. Fugiat error eum quam illum labore recusandae at exercitationem pariatur. Placeat nobis laborum nemo, quam libero aliquam ut fugit rerum aspernatur temporibus fugiat dolores eveniet nesciunt incidunt doloribus recusandae ipsam et veritatis dicta tempora!
-Lorem ipsum dolor sit amet consectetur adipisicing elit. Ut tenetur eveniet voluptatibus qui reiciendis quibusdam numquam esse, quas, aperiam amet voluptas iure voluptate repellat aut quaerat corrupti alias suscipit tempore!
-        </div></div>
+            <h1>Какво е “Aurora”?</h1>
+            <p>“Aurora” е проект, имащ за цел създаването и изстрелването на метеорологичен балон, способен да достигне до 30 километра височина – близо до границата на Космоса. Нашата цел е да заснемем уникални кадри от високите слоеве на атмосферата, да проведем научни експерименти и да вдъхновим повече млади хора като нас да се занимават с наука. Проектът съчетава инженерни, научни и маркетингови усилия – от изграждането на специална сондова кутия и електроника, до рекламна кампания, насочена към широката публика. 
+            <H1>Екип</H1><p>
+Ние сме екип от десетокласници, вдъхновени от науката. Започнахме като просто група ентусиазирани приятели, но идеите ни бързо се превърнаха в реалност и вече сме много повече заедно. Групата ни включва хора с разнообразни интереси - от изкуство до физика и електроника. 
+            </div></div>
         <a class="closer" onclick="windowClose()">X</a>
     </div>
     <div class="window" id="rawDataWindow">
