@@ -1,5 +1,5 @@
-var redColor="#FFF";
-var redColor2="#888";
+var redColor="#F00";
+var redColor2="#800";
 
 const canvas=document.getElementById("image");
 const diagramsIm=document.getElementById("diagramsIm");
