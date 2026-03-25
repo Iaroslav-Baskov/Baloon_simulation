@@ -149,23 +149,23 @@ catch(err) {
 
 
 function makeNoise(context) {
-  // var imgd = context.createImageData(canvas.width, canvas.height);
-  // var pix = imgd.data;
+  var imgd = context.createImageData(canvas.width, canvas.height);
+  var pix = imgd.data;
 
-  // for (var i = 0, n = pix.length; i < n; i += 4) {
-  //     var c = 9 + Math.sin(i/100000 + noiseTime /7); // A sine wave of the form sin(ax + bt)
-  //     pix[i] = pix[i+1] = pix[i+2] = 40 * Math.random() * c; // Set a random gray
-  //     pix[i+3] = 255; // 100% opaque
-  // }
+  for (var i = 0, n = pix.length; i < n; i += 4) {
+      var c = 9 + Math.sin(i/100000 + noiseTime /7); // A sine wave of the form sin(ax + bt)
+      pix[i] = pix[i+1] = pix[i+2] = 40 * Math.random() * c; // Set a random gray
+      pix[i+3] = 255; // 100% opaque
+  }
 
-  // context.putImageData(imgd, 0, 0);
-  // noiseTime  = (noiseTime  + 1) % canvas.height;
-  // ctx.font = Math.floor(1/aWidth*width*5)+"px myFont";
-  // ctx.fillStyle=redColor2;
-  // ctx.textBaseline = "middle";
-  // ctx.textAlign = "center";
-  // ctx.fillText("waiting", width/2,height/2-0.5/aWidth*width*5);
-  // ctx.fillText("for data", width/2,height/2+0.5/aWidth*width*5);
+  context.putImageData(imgd, 0, 0);
+  noiseTime  = (noiseTime  + 1) % canvas.height;
+  ctx.font = Math.floor(1/aWidth*width*5)+"px myFont";
+  ctx.fillStyle=redColor2;
+  ctx.textBaseline = "middle";
+  ctx.textAlign = "center";
+  ctx.fillText("waiting", width/2,height/2-0.5/aWidth*width*5);
+  ctx.fillText("for data", width/2,height/2+0.5/aWidth*width*5);
 
 }
 
