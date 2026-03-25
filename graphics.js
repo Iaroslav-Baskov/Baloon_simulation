@@ -1,19 +1,13 @@
 var redColor="#F00";
 var redColor2="#800";
-
-const canvas=document.getElementById("image");
 const diagramsIm=document.getElementById("diagramsIm");
 diagramsIm.width=diagramsIm.clientWidth;
 diagramsIm.height=diagramsIm.clientHeight;
-const width = canvas.clientWidth;
-const height = canvas.clientHeight;
 var terrain=[];
 var langSelect=document.getElementById("lang");
 var cloudThickness=1000;
 var cloudAltitude=[2000,8000,16000];
-canvas.width=width;
-canvas.height=height;
-const maxA=90;
+const maxA=70;
 var aHeight;
 var aWidth;
 var zeroHour;
@@ -30,14 +24,13 @@ var pitch;
 var yaw;
 var root = document.querySelector(':root');
 var altMarker=document.getElementById('marker');
-const ctx = canvas.getContext("2d");
 const Atm=40000;
 const R=6357000;
 const m=height/aHeight*10;
 var mode="baloon";
     var dmax=200000;
 var data={
-  altitude:30000,
+  altitude:1000,
   time:6500000000,
 }
 var limits={
@@ -78,31 +71,39 @@ var map = L.map('map',{ attributionControl:false }).setView([43, 25], 13);
   maxZoom: 17,
   attribution: 'Map data: © OpenStreetMap contributors, SRTM | Map style: © OpenTopoMap (CC-BY-SA)'
 }).addTo(map);
+
 var latlngs = [];
-var polyline = L.polyline(latlngs, {color: 'red'}).addTo(map);
+var polyline = L.polyline(latlngs, {color: redColor}).addTo(map);
 var marker = L.marker([0, 0], {draggable: false}).addTo(map);
 var map2;
 var observer;
 var sightRay;
-var sky=new Image();
-sky.src="./textures/sky.png"
+
 var fog=new Image();
+fog.crossOrigin = "anonymous";
 fog.src="./textures/fog.png"
 var boxFront=new Image();
+boxFront.crossOrigin = "anonymous";
 boxFront.src="./textures/Back.png"
 var baloon=new Image();
+baloon.crossOrigin = "anonymous";
 baloon.src="./textures/baloon.png"
 var cum=new Image();
+cum.crossOrigin = "anonymous";
 cum.src="./textures/cum.png"
 var clouds=new Image();
+clouds.crossOrigin = "anonymous";
 clouds.src="./textures/clouds.png"
 var cur=new Image();
+cur.crossOrigin = "anonymous";
 cur.src="./textures/cur.png"
+
 for(var i=0;i<5;i++){
 terrain[i]=new Image();
+terrain[i].crossOrigin = "anonymous";
 terrain[i].src="./textures/terrain"+i+".png"}
-var sunX=width/4;
-var sunY=0;
+
+var sun={x:width/4,y:0}
 const form = document.forms[0];
 const radios = form.elements["selectData"];
 const relatedTo = form.elements["relTo"];
@@ -111,6 +112,20 @@ var noDataEvent;
 var allData=[
   {AHT_temp:[]}
 ];
+
+stars=[]
+for(var i=0;i<100;i++){
+  let r=Math.random();
+  let b=Math.random();
+  let g=(r+b)/2;
+  stars.push([width*Math.random(),height*Math.random(),r,g,b]);
+}
+let texture=renderStars(stars,100, aWidth,1);
+drawCanvas(texture);
+starCtx.clearRect(0,0,width,height);
+starCtx.drawImage(drawCanvas.canvas,0,0);
+
+
 async function startData() {
   const url = "https://aurora.stratostat.com//log.txt"
 try {
@@ -134,70 +149,26 @@ catch(err) {
 
 
 function makeNoise(context) {
-  var imgd = context.createImageData(canvas.width, canvas.height);
-  var pix = imgd.data;
+  // var imgd = context.createImageData(canvas.width, canvas.height);
+  // var pix = imgd.data;
 
-  for (var i = 0, n = pix.length; i < n; i += 4) {
-      var c = 9 + Math.sin(i/100000 + noiseTime /7); // A sine wave of the form sin(ax + bt)
-      pix[i] = pix[i+1] = pix[i+2] = 40 * Math.random() * c; // Set a random gray
-      pix[i+3] = 255; // 100% opaque
-  }
+  // for (var i = 0, n = pix.length; i < n; i += 4) {
+  //     var c = 9 + Math.sin(i/100000 + noiseTime /7); // A sine wave of the form sin(ax + bt)
+  //     pix[i] = pix[i+1] = pix[i+2] = 40 * Math.random() * c; // Set a random gray
+  //     pix[i+3] = 255; // 100% opaque
+  // }
 
-  context.putImageData(imgd, 0, 0);
-  noiseTime  = (noiseTime  + 1) % canvas.height;
-  ctx.font = Math.floor(1/aWidth*width*5)+"px myFont";
-  ctx.fillStyle="BLACK";
-  ctx.textBaseline = "middle";
-  ctx.textAlign = "center";
-  ctx.fillText("waiting", width/2,height/2-0.5/aWidth*width*5);
-  ctx.fillText("for data", width/2,height/2+0.5/aWidth*width*5);
+  // context.putImageData(imgd, 0, 0);
+  // noiseTime  = (noiseTime  + 1) % canvas.height;
+  // ctx.font = Math.floor(1/aWidth*width*5)+"px myFont";
+  // ctx.fillStyle=redColor2;
+  // ctx.textBaseline = "middle";
+  // ctx.textAlign = "center";
+  // ctx.fillText("waiting", width/2,height/2-0.5/aWidth*width*5);
+  // ctx.fillText("for data", width/2,height/2+0.5/aWidth*width*5);
 
 }
 
-function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,clouds=0) {
-    const theta = (angularDistance * Math.PI) / 180;
-    const sigma=0.998;
-    const k2=1e-20;
-    const wavelengths = {
-      red: 700e-9,
-      green: 550e-9,
-      blue: 450e-9,
-    };
-    const IR=0.8*Ir0;
-    const IG=1*Ig0;
-    const IB=1*Ib0;
-
-    function rayleighScattering(lambda) {
-        var col=(wavelengths.red/lambda)**4;
-      return (
-        k2**(clouds*(theta/airMass)**2 + (theta/col/airMass)**2*(1-clouds))*(sigma**((additiveAirmass+airMass)*col))
-      );
-    }
-    const I_red = rayleighScattering(wavelengths.red);
-    const I_green = rayleighScattering(wavelengths.green);
-    const I_blue = rayleighScattering(wavelengths.blue);
-    var col=1/(Math.pow(wavelengths.blue, 4)/Math.pow(wavelengths.red, 4));
-    
-    const max=k2**((theta/airMass/col)**2)*(Ir0+Ig0+Ib0)/3;
-    const red = Math.min(255, I_red  * 255)*IR;
-    const green = Math.min(255, I_green * 255)*IG;
-    const blue = Math.min(255, I_blue * 255)*IB;
-
-    return `rgba(${Math.round(red)}, ${Math.round(green)}, ${Math.round(blue)}, ${max})`;
-  }
-  function drawAtmosphere(ctx,altitude,minH,maxH,Add, step=10){
-    var background = ctx.createLinearGradient(0,minH, 0,maxH);
-    for(var y=minH;y<=maxH;y+=(maxH-minH)/step){
-          var dist=Math.sqrt(sunX**2+(y-sunY)**2)/width*aWidth;
-          var z=(90-(height/2-y)/height*aHeight)/180*Math.PI;
-          var yAtm=Atm-altitude;
-          var airmass=Math.max((R/yAtm*Math.sqrt(Math.cos(z)**2+2*yAtm/R+(yAtm/R)**2)-R/yAtm*Math.cos(z))*(yAtm/Atm),0);
-          var add=Add;
-          background.addColorStop((y-minH)/(maxH-minH),skyColor(dist,airmass,1,1,1,add));
-    }
-    ctx.fillStyle=background;
-    ctx.fillRect(0,minH,width, maxH);
-  }
   function drawBox(ctx,image, x,y,wid=300,angle=0){
     ctx.save();
     ctx.translate(x,y);
@@ -221,19 +192,20 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
   }
   function drawWorld(){
           var a=Math.sin(data.time/1000/3600/24%1*2*Math.PI-Math.PI/2);
-          sunY=height/2-45*a/aHeight*height;
+          //sun.y=height/2-45*a/aHeight*height;
           document.getElementById("rssi").innerText="rssi:" + data.rssi + "db";
           document.getElementById("snr").innerText="snr:" + data.snr + "db";
     horyzont=Math.acos(R/(R+data["altitude"]))/Math.PI*180;
     var horyzontH=Math.floor(horyzont*height/aHeight+height/2);
-    ctx.drawImage(sky,0,0,width,sky.height/sky.width*width);
     var add=0;
     horyzontH=Math.floor(horyzontH);
-    if(horyzontH<sunY){
-      add+=((sunY-horyzontH)/height*aHeight/180*Math.PI*R/Atm);
+    if(horyzontH<sun.y){
+      add+=((sun.y-horyzontH)/height*aHeight/180*Math.PI*R/Atm);
     }
-    drawAtmosphere(ctx,data["altitude"],0,height, add);
-
+    drawCanvas(renderSky(sun.x,sun.y,data["altitude"],aWidth,1));
+    skyCtx.clearRect(0,0,width,height);
+    skyCtx.drawImage(drawCanvas.canvas, 0, 0);
+    ctx.clearRect(0,0,width,height);
     root.style.setProperty('--altitude', data.altitude);
     root.style.setProperty('--yaw', yaw/Math.PI*180);
     root.style.setProperty('--roll', roll/Math.PI*180);
@@ -265,6 +237,31 @@ function skyColor(angularDistance, airMass,Ir0=1,Ig0=1,Ib0=1,additiveAirmass=0,c
     ctx.drawImage(fog,0,-cloudAltitude[0]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
     ctx.drawImage(fog,0,-cloudAltitude[1]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
   ctx.drawImage(fog,0,-cloudAltitude[2]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
+  
+      const sunZ = (1.570796) + ((height / 2.0 -height+ sun.y) / width)* aWidth/180*3.14159265;
+
+    const sunAirmass=Math.max(calcAirmass(data.altitude,sunZ),0);
+
+    const btau=0.2;
+    const taur=0.051*btau;
+    const taug=0.136*btau;
+    const taub=0.252*btau;
+    let sunR = 1*calcDestinction(taur,sunAirmass);
+    let sunG = 1*calcDestinction(taug,sunAirmass);
+    let sunB = 0.9*calcDestinction(taub,sunAirmass);
+    const worldTexture = canvasToTexture(canvas);
+
+    //2. PROCESS: Apply your sun-based color multiplication
+    //Pass the texture we just created into the multiplier
+    const processedTexture = multiplyColor(worldTexture,sunR,sunG,sunB);
+
+    // 3. RENDER: Convert that GPU data back to a visible state
+    drawCanvas(processedTexture);
+    ctx.save();
+    ctx.globalCompositeOperation = "source-atop"
+
+    ctx.drawImage(drawCanvas.canvas,0,0);
+    ctx.restore();
 }
 startData();
   terrain[terrain.length-1].onload=function(){
@@ -489,7 +486,7 @@ setLocation();
   maxZoom: 17,
   attribution: 'Map data: © OpenStreetMap contributors, SRTM | Map style: © OpenTopoMap (CC-BY-SA)'
 }).addTo(map2);
-sightRay = L.polyline([], {color: 'red'}).addTo(map2);
+sightRay = L.polyline([], {color: redColor}).addTo(map2);
 observer = L.marker([43, 25], {draggable: true}).addTo(map2);
 observerMoved();
 observer.on("dragend", (e) => observerMoved());
