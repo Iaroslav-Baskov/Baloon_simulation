@@ -192,7 +192,7 @@ function makeNoise(context) {
   }
   function drawWorld(){
           var a=Math.sin(data.time/1000/3600/24%1*2*Math.PI-Math.PI/2);
-          //sun.y=height/2-45*a/aHeight*height;
+          sun.y=height/2-45*a/aHeight*height;
           document.getElementById("rssi").innerText="rssi:" + data.rssi + "db";
           document.getElementById("snr").innerText="snr:" + data.snr + "db";
     horyzont=Math.acos(R/(R+data["altitude"]))/Math.PI*180;
@@ -267,7 +267,7 @@ startData();
   terrain[terrain.length-1].onload=function(){
 
     
-    const socket = new WebSocket("ws://79.100.175.98:1560");
+    const socket = new WebSocket("wss://ws.stratostat.com/");
 
     socket.addEventListener("open", (event) => {
       console.log("Connected");
