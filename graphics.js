@@ -11,7 +11,6 @@ const maxA=70;
 var aHeight;
 var aWidth;
 var horyzont=0;
-var csvFileLink=document.getElementById("csvFile");
 if(height>width){
 aHeight=maxA;
 aWidth=aHeight*width/height;}else{
@@ -57,23 +56,29 @@ var csvKeys=[
 ];
 
 const nameToData={
-  "temperature":{"data":["AHT_temp[C]","BMP_temp[C]","gtemp"],"unit":"°C","labels":["outside temperature 1","outside temperature 2","inside temperature"],"label":"temperature"},
-  "pressure":{"data":["BMP_pres"],"unit":"Pa","labels":["pressure"],"label":"pressure"},
-  "humidity":{"data":["AHT_hum"],"unit":"%","labels":["humidity"],"label":"humidity"},
-  "PMconc":{"data":["pm1_0","pm2_5","pm10_0"],"unit":"µg/m³","labels":["pm1_0","pm2_5","pm10_0"],"label":"concentration"},
-  "PMnum":{"data":["p03um","p05um","p10um"],"unit":"n/0.1L","labels":["p03m","p05m","p10m"],"label":"number"},
-  "rssi":{"data":["rssi"],"unit":"dbm","labels":["rssi"],"label":"LoRa rssi"},
-  "snr":{"data":["snr"],"unit":"dbm","labels":["snr"],"label":"LoRa snr"},
-  "voltage":{"data":["voltage"],"unit":"V","labels":["volage"],"label":"Battery voltage"},
-  "altitude":{"data":["altitude"],"unit":"m","labels":["altitude"],"label":"altitude"},
-  "time":{"data":["UT[s]"],"unit":"s","labels":["time"],"label":"Universal Time"}
+  "altitude":{"data":["altitude"],"unit":"m","labels":{"en":["altitude"],"bg":["Височина"]},"label":{"en":"altitude","bg":"Височина"}},
+  "time":{"data":["UT[s]"],"unit":"s","labels":{"en":["time"],"bg":["време"]},"label":{"en":"Universal Time","bg":"Универсално време"}},
+  "temperature":{"data":["AHT_temp[C]","BMP_temp[C]","gtemp"],"unit":"°C","labels":{"en":["outside temperature 1","outside temperature 2","inside temperature"],"bg":["Външна температура 1","Външна температура 2","Вътрешна температура"]},"label":{"en":"temperature","bg":"температура"}},
+  "pressure":{"data":["BMP_pres"],"unit":"Pa","labels":{"en":["pressure"],"bg":["Налягане"]},"label":{"en":"pressure","bg":"Налягане"}},
+  "humidity":{"data":["AHT_hum"],"unit":"%","labels":{"en":["humidity"],"bg":["Влажност"]},"label":{"en":"humidity","bg":"Влажност"}},
+  "PMconc":{"data":["pm1_0","pm2_5","pm10_0"],"unit":"µg/m³","labels":{"en":["pm1_0","pm2_5","pm10_0"],"bg":["pm1_0","pm2_5","pm10_0"]},"label":{"en":"Dist concentration","bg":"Концентрация на прахови частици"}},
+  "PMnum":{"data":["p03um","p05um","p10um"],"unit":"n/0.1L","labels":{"en":["p03m","p05m","p10m"],"bg":["p03m","p05m","p10m"]},"label":{"en":"Dist count","bg":"Количество прахови частици"}},
+  "rssi":{"data":["rssi"],"unit":"dbm","labels":{"en":["rssi"],"bg":["rssi"]},"label":{"en":"LoRa rssi","bg":"LoRa rssi"}},
+  "snr":{"data":["snr"],"unit":"dbm","labels":{"en":["snr"],"bg":["snr"]},"label":{"en":"LoRa snr","bg":"LoRa snr"}},
+  "voltage":{"data":["voltage"],"unit":"V","labels":{"en":["volage"],"bg":["Напрежение"]},"label":{"en":"Battery voltage","bg":"Напрежение на батерията"}}
 }
+const form = document.forms[0];
+const radios = form.elements["selectData"];
+const relatedTo = form.elements["relTo"];
 
-var csvContent = ""; 
-for(key of csvKeys){
-  csvContent+=key+",";
+for(var index in nameToData){
+  for(var Ilang =0;Ilang<langSelect.length;Ilang++){
+    let lang=langSelect[Ilang].value;
+    radios.innerHTML=radios.innerHTML+'<option class="option '+lang+'" value='+index+'>'+nameToData[index]["label"][lang]+'</option>';
+  }
 }
-var csvUrl = URL.createObjectURL(new Blob([csvContent], { type: "text/csv;charset=utf-8;" }));
+relatedTo.innerHTML=radios.innerHTML;
+
 var noiseTime = 0;
 var noise=setInterval(() => {
   makeNoise(ctx);
@@ -117,9 +122,6 @@ terrain[i].crossOrigin = "anonymous";
 terrain[i].src="./textures/terrain"+i+".png"}
 
 var sun={x:width/4,y:0}
-const form = document.forms[0];
-const radios = form.elements["selectData"];
-const relatedTo = form.elements["relTo"];
 
 var noDataEvent;
 var allData=[
@@ -137,6 +139,9 @@ let texture=renderStars(stars,100, aWidth,1);
 drawCanvas(texture);
 starCtx.clearRect(0,0,width,height);
 starCtx.drawImage(drawCanvas.canvas,0,0);
+
+var csvFileLink=document.getElementById("csvFile");
+csvFileLink.onclick=generateCSV;
 
 async function startData() {
     const url = "https://aurora.stratostat.com/log.txt";
@@ -177,25 +182,10 @@ async function startData() {
             loadData(value);
         }
 
-        // 5. Drawing (only if data exists to prevent WebGL errors)
-        if (Object.keys(json).length > 0) {
-            drawChart(
-                [allData["AHT_temp[C]"], allData["BMP_temp[C]"], allData.gtemp],
-                ["outside1", "outside2", "inside"],
-                "temperature",
-                "°C"
-            );
-        }
-
     } catch (err) {
         console.error("Detailed Error:", err);
     }
 }
-
-
-
-
-
 function makeNoise(context) {
   var imgd = context.createImageData(canvas.width, canvas.height);
   var pix = imgd.data;
@@ -209,7 +199,7 @@ function makeNoise(context) {
   context.putImageData(imgd, 0, 0);
   noiseTime  = (noiseTime  + 1) % canvas.height;
   ctx.font = Math.floor(1/aWidth*width*5)+"px myFont";
-  ctx.fillStyle=redColor2;
+  ctx.fillStyle=redColor;
   ctx.textBaseline = "middle";
   ctx.textAlign = "center";
   ctx.fillText("waiting", width/2,height/2-0.5/aWidth*width*5);
@@ -392,10 +382,10 @@ function changeData() {
     // 4. Update the chart with the new labels and units
     updateChart(
         input,
-        metricInfo["labels"],
-        relationInfo["label"],
+        metricInfo["labels"][langSelect.value],
+        relationInfo["label"][langSelect.value],
         relationInfo["unit"],
-        metricInfo["label"],
+        metricInfo["label"][langSelect.value],
         metricInfo["unit"]
     );
 }
@@ -420,6 +410,7 @@ langSelect.onchange=function(){
             lines[i].style.display="none";
           }
     }
+    changeData();
 }
 var myChart;
 var font=parseFloat(getComputedStyle(document.body).getPropertyValue('font-size'));
@@ -591,20 +582,6 @@ function loadData(json){
                   allData[key].push(undefined);
                 }
           }
-          var row="\n"
-          for(key of csvKeys){
-            if(data[key]){
-              row+=data[key];
-            }else{
-              row+="undefined";
-            }
-            row+=",";
-          }
-          csvContent+=row;
-          URL.revokeObjectURL(csvUrl);
-          csvUrl = URL.createObjectURL(new Blob([csvContent], { type: "text/csv;charset=utf-8;" }));
-          if (csvFileLink) csvFileLink.href = csvUrl;
-
         
 }
 function filter(json,limits){
@@ -630,4 +607,29 @@ function filter(json,limits){
       }
   }
   return output;
+}
+function generateCSV(){
+  var csvContent = ""; 
+  for(key of csvKeys){
+    csvContent+=key+",";
+  }
+  csvContent+="\n";
+    for(var i=0;i<allData[csvKeys[0]].length;i++){
+      for(key of csvKeys){
+        csvContent+=allData[key][i]+",";
+      }
+      csvContent+="\n";
+    }
+    csvUrl = URL.createObjectURL(new Blob([csvContent], { type: "text/csv;charset=utf-8;",}));
+const link = document.createElement("a");
+link.href = csvUrl;
+link.setAttribute("download", "stratostat_data.csv"); // Set the filename
+
+// 4. Append to body, click it, and remove it
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+
+// 5. Clean up the URL to free up memory
+URL.revokeObjectURL(csvUrl);
 }
