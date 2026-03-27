@@ -10,7 +10,6 @@ var cloudAltitude=[2000,8000,16000];
 const maxA=70;
 var aHeight;
 var aWidth;
-var zeroHour;
 var horyzont=0;
 var csvFileLink=document.getElementById("csvFile");
 if(height>width){
@@ -67,7 +66,7 @@ const nameToData={
   "snr":{"data":["snr"],"unit":"dbm","labels":["snr"],"label":"LoRa snr"},
   "voltage":{"data":["voltage"],"unit":"V","labels":["volage"],"label":"Battery voltage"},
   "altitude":{"data":["altitude"],"unit":"m","labels":["altitude"],"label":"altitude"},
-  "time":{"data":["time"],"unit":"s","labels":["time"],"label":"Universal Time"}
+  "time":{"data":["UT[s]"],"unit":"s","labels":["time"],"label":"Universal Time"}
 }
 
 var csvContent = ""; 
@@ -168,10 +167,8 @@ async function startData() {
         if (cleanedText.endsWith(',')) {
             cleanedText = cleanedText.slice(0, -1);
         }
-        
-        // Ensure it's a valid JSON object
-        if (!cleanedText.startsWith('{')) cleanedText = '{' + cleanedText;
-        if (!cleanedText.endsWith('}')) cleanedText = cleanedText + '}';
+        cleanedText=cleanedText.replaceAll("\n", " ");
+        cleanedText = cleanedText + '}';
 
         const json = JSON.parse(cleanedText);
         
@@ -371,13 +368,37 @@ terrain[terrain.length-1].onload();
 	}
 radios.onchange=changeData;
 relatedTo.onchange=changeData;
-function changeData(){
-      var input=[]
-      for(var col in nameToData[radios.value]["data"]){
-        input.push(allData[col+"_by_"+relatedTo.value]);
-      }
-      updateChart(input,nameToData[radios.value]["labels"],nameToData[radios.value]["label"],nameToData[radios.value]["unit"],nameToData[relatedTo.value]["label"],nameToData[relatedTo.value]["unit"]);  
+function changeData() {
+    // 1. Get current selection values
+    var metricKey = radios.value;
+    var relationKey = relatedTo.value;
+
+    // 2. Guard: Ensure the selected keys exist in our mapping
+    if (!nameToData[metricKey] || !nameToData[relationKey]) return;
+
+    var input = [];
+    var metricInfo = nameToData[metricKey];
+    var relationInfo = nameToData[relationKey];
+
+    // 3. Corrected Loop: Use 'of' to get values, not 'in'
+    for (var index in  metricInfo["data"]) {
+      col = metricInfo["data"][index];
+      input.push([]);
+        for(var i=0; i<allData[col].length; i++){
+          input[input.length-1].push({x:allData[relationInfo["data"][0]][i], y:allData[col][i]});
+        }
     }
+
+    // 4. Update the chart with the new labels and units
+    updateChart(
+        input,
+        metricInfo["labels"],
+        relationInfo["label"],
+        relationInfo["unit"],
+        metricInfo["label"],
+        metricInfo["unit"]
+    );
+}
 langSelect.onchange=function(){
     if(langSelect.value=="bg"){
       var lines = document.getElementsByClassName('bg');
@@ -550,25 +571,25 @@ function calcObservation(lat0,lat1,lon0,lon1,alt0,alt1,R){
 
 function loadData(json){
   json=filter(json,limits);
-        if(json["UT[s]"] && zeroHour==undefined){
-          zeroHour=json["UT[s]"];
-        }
+
         if (json["lat"] ) {
         if(json["lat"]>=0){
                var latlng = L.latLng(json["lat"], json["lon"]);
     marker.setLatLng(latlng); 
     polyline.addLatLng(latlng);}}
-          for(var [parameter, value] of Object.entries(json)){
-              value=parseFloat(value);
-              for(var col in nameToData){
-                if(!allData[parameter+"_by_"+col]){
-                  allData[parameter+"_by_"+col]=[];
+          for(var index in csvKeys){
+            var key=csvKeys[index];
+                if(!allData[key]){
+                  allData[key]=[];
                 }
-                data[parameter]=value;
-                if(json[nameToData[col]["data"][0]]){
-                  allData[parameter+"_by_"+col].push({y:parseFloat(value),x:parseFloat(json[nameToData[col]["data"][0]])});
+                if(json[key]){
+                value=parseFloat(json[key]);
+                data[key]=value;
+                allData[key].push(value);}
+                else{
+                  data[key]=undefined;
+                  allData[key].push(undefined);
                 }
-            }
           }
           var row="\n"
           for(key of csvKeys){
