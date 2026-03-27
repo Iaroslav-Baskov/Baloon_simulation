@@ -65,7 +65,7 @@ function starMask(theta, sunRadius, sunSoftness,sunAngle){
 
     const sun = starDisc(theta, sunRadius, sunSoftness);
     
-    const numSpikes = 6.0;
+    const numSpikes = 8.0;
     const alignment = Math.max(-1,Math.min(1,Math.cos(sunAngle * numSpikes)));
     const angularDist = Math.acos(alignment) / numSpikes;
 
