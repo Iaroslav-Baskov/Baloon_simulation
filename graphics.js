@@ -51,11 +51,25 @@ var limits={
   "10µm":{max:300, min:0, exceptions:[]},
 };
 var csvKeys=[
-    "AHT_temp", "AHT_hum", "BMP_temp", "BMP_pres",
-    "ax", "ay", "az", "gx", "gy", "gz", "gtemp",
-    "magx", "magy", "magz", "volt",
-    "pm1_0", "pm2_5", "pm10_0", "03um", "05um", "10um","lon","lat","altitude","time"
+    "AHT_temp[C]", "AHT_hum", "BMP_temp[C]", "BMP_pres",
+    "ax[m/s2]", "ay[m/s2]", "az[m/s2]", "gx", "gy", "gz", "gtemp",
+    "magx[uT]", "magy", "magz[uT]", "voltage",
+    "pm1_0", "pm2_5", "pm10_0", "p03um", "p05um", "p10um","lon","lat","altitude","UT[s]"
 ];
+
+const nameToData={
+  "temperature":{"data":["AHT_temp[C]","BMP_temp[C]","gtemp"],"unit":"°C","labels":["outside temperature 1","outside temperature 2","inside temperature"],"label":"temperature"},
+  "pressure":{"data":["BMP_pres"],"unit":"Pa","labels":["pressure"],"label":"pressure"},
+  "humidity":{"data":["AHT_hum"],"unit":"%","labels":["humidity"],"label":"humidity"},
+  "PMconc":{"data":["pm1_0","pm2_5","pm10_0"],"unit":"µg/m³","labels":["pm1_0","pm2_5","pm10_0"],"label":"concentration"},
+  "PMnum":{"data":["p03um","p05um","p10um"],"unit":"n/0.1L","labels":["p03m","p05m","p10m"],"label":"number"},
+  "rssi":{"data":["rssi"],"unit":"dbm","labels":["rssi"],"label":"LoRa rssi"},
+  "snr":{"data":["snr"],"unit":"dbm","labels":["snr"],"label":"LoRa snr"},
+  "voltage":{"data":["voltage"],"unit":"V","labels":["volage"],"label":"Battery voltage"},
+  "altitude":{"data":["altitude"],"unit":"m","labels":["altitude"],"label":"altitude"},
+  "time":{"data":["time"],"unit":"s","labels":["time"],"label":"Universal Time"}
+}
+
 var csvContent = ""; 
 for(key of csvKeys){
   csvContent+=key+",";
@@ -125,23 +139,60 @@ drawCanvas(texture);
 starCtx.clearRect(0,0,width,height);
 starCtx.drawImage(drawCanvas.canvas,0,0);
 
-
 async function startData() {
-  const url = "https://aurora.stratostat.com//log.txt"
-try {
-    const response = await fetch(url, {cache: "no-store"}).then((response) => response.text()).then((text) => {
-        text = text.slice(0, text.length-2) + "}";
-        var json=JSON.parse(text);
-        console.log(json);
-        for(const [key, value] of Object.entries(json)){
-         loadData(value);
+    const url = "https://aurora.stratostat.com/log.txt";
+
+    try {
+        // 1. Fetch with 'no-store' to ensure we don't get a cached 0-byte file
+        const response = await fetch(url, { cache: "no-store" });
+
+        if (!response.ok) {
+            console.error("Server reached but returned error:", response.status);
+            return;
         }
-       drawChart([allData.AHT_temp,allData.BMP_temp,allData.gtemp],["outside1","outside2","inside"],"temperature","°C");  
-});
-}
-catch(err) {
-    console.log(err);
-}
+
+        // 2. YOU MUST AWAIT THE TEXT CONSUMPTION
+        const text = await response.text();
+        
+        console.log("Success! Characters received:", text.length);
+
+        if (text.length === 0) {
+            console.warn("The file is currently empty on the server.");
+            return;
+        }
+
+        // 3. Robust JSON Formatting
+        let cleanedText = text.trim();
+        
+        // Remove trailing comma if it exists
+        if (cleanedText.endsWith(',')) {
+            cleanedText = cleanedText.slice(0, -1);
+        }
+        
+        // Ensure it's a valid JSON object
+        if (!cleanedText.startsWith('{')) cleanedText = '{' + cleanedText;
+        if (!cleanedText.endsWith('}')) cleanedText = cleanedText + '}';
+
+        const json = JSON.parse(cleanedText);
+        
+        // 4. Data Processing
+        for (const [key, value] of Object.entries(json)) {
+            loadData(value);
+        }
+
+        // 5. Drawing (only if data exists to prevent WebGL errors)
+        if (Object.keys(json).length > 0) {
+            drawChart(
+                [allData["AHT_temp[C]"], allData["BMP_temp[C]"], allData.gtemp],
+                ["outside1", "outside2", "inside"],
+                "temperature",
+                "°C"
+            );
+        }
+
+    } catch (err) {
+        console.error("Detailed Error:", err);
+    }
 }
 
 
@@ -191,7 +242,7 @@ function makeNoise(context) {
     }
   }
   function drawWorld(){
-          var a=Math.sin(data.time/1000/3600/24%1*2*Math.PI-Math.PI/2);
+          var a=Math.sin(data["UT[s]"]/1000/3600/24%1*2*Math.PI-Math.PI/2);
           sun.y=height/2-45*a/aHeight*height;
           document.getElementById("rssi").innerText="rssi:" + data.rssi + "db";
           document.getElementById("snr").innerText="snr:" + data.snr + "db";
@@ -297,77 +348,35 @@ terrain[terrain.length-1].onload();
               makeNoise(ctx);
             }, 50);
           },40000);
-          yaw=Math.atan2(data.magy,data.magx)+Math.PI ;
-          roll=Math.atan2(-data.ay,data.az);
-          pitch=Math.atan2(data.ax,data.az);
+          yaw=Math.atan2(data["magy[uT]"],data["magx[uT]"])+Math.PI ;
+          roll=Math.atan2(-data["ay[m/s2]"],data["az[m/s2]"]);
+          pitch=Math.atan2(data["ax[m/s2]"],data["az[m/s2]"]);
 
           drawWorld();
           if(observer!=undefined){
             observerMoved();
-          }
-          changeData();
+          }if (!myChart) {
+        // Create the chart for the first time
+        drawChart(
+            [allData["AHT_temp[C]_by_time"], allData["BMP_temp[C]_by_time"], allData["gtemp_by_time"]],
+            ["outside1", "outside2", "inside"],
+            "temperature",
+            "°C"
+        );
+        } else {
+            // Chart already exists, just push new data
+            changeData();
+        }
         map.setView([data.lat, data.lon], map.getZoom());
 	}
 radios.onchange=changeData;
 relatedTo.onchange=changeData;
 function changeData(){
-  if(relatedTo.value=="altitude"){
-       switch(radios.value){
-       case "temperature":
-       updateChart([allData.AHT_temp,allData.BMP_temp,allData.gtemp],["outside temperature 1","outside temperature 2","inside temperature"],"temperature","°C","altitude","m");  
-       break;
-       case "temperature_byTime":
-       updateChart([allData["AHT_temp_byTime"],allData["BMP_temp_byTime"],allData["gtemp_byTime"],],["outside temperature 1","outside temperature 2","inside temperature"],"time","h","temperature","°C"); 
-       break;
-       case "pressure":
-       updateChart([allData.BMP_pres],["pressure"],"pressure","Pa","altitude","m");  
-       break;
-       case "humidity":
-       updateChart([allData["AHT_hum"]],["humidity"],"humidity","%","altitude","m");  
-       break;
-       case "PMconc":
-       updateChart([allData.pm1_0,allData.pm2_5,allData.pm10_0],["pm1_0","pm2_5","pm10_0"],"concentration","µg/m³","altitude","m");  
-       break;
-       case "PMnum":
-       updateChart([allData["03um"],allData["05um"],allData["10um"]],["03µm","05µm","10µm"],"number","n/0.1L","altitude","m");  
-       break;
-       case "rssi":
-       updateChart([allData["rssi"]],["rssi"],"rssi","db","altitude","m");  
-       break;
-       case "snr":
-       updateChart([allData["snr"]],["snr"],"snr","db","altitude","m");  
-       break;
-       case "volt":
-       updateChart([allData["volt"]],["battery voltage"],"battery voltage","v","altitude","m");  
-       break;
-      }}else{
-       switch(radios.value){
-       case "temperature":
-       updateChart([allData["AHT_temp_byTime"],allData["BMP_temp_byTime"],allData["gtemp_byTime"],],["outside temperature 1","outside temperature 2","inside temperature"],"time","h","temperature","°C"); 
-       break;
-       case "pressure":
-       updateChart([allData.BMP_pres_byTime],["pressure"],"time","h","pressure","Pa");  
-       break;
-       case "humidity":
-       updateChart([allData["AHT_hum_byTime"]],["humidity"],"time","h","humidity","%");  
-       break;
-       case "PMconc":
-       updateChart([allData.pm1_0_byTime,allData.pm2_5_byTime,allData.pm10_0_byTime],["pm1_0","pm2_5","pm10_0"],"time","h","concentration","µg/m³");  
-       break;
-       case "PMnum":
-       updateChart([allData["03um_byTime"],allData["05um_byTime"],allData["10um_byTime"]],["03µm","05µm","10µm"],"time","h","number","n/0.1L");  
-       break;
-       case "rssi":
-       updateChart([allData["rssi_byTime"]],["rssi"],"time","h","rssi","db");  
-       break;
-       case "snr":
-       updateChart([allData["snr_byTime"]],["snr"],"time","h","snr","db");  
-       break;
-      case "volt":
-       updateChart([allData["volt_byTime"]],["battery voltage"],"time","h","battery voltage","v");  
-       break;
+      var input=[]
+      for(var col in nameToData[radios.value]["data"]){
+        input.push(allData[col+"_by_"+relatedTo.value]);
       }
-      }
+      updateChart(input,nameToData[radios.value]["labels"],nameToData[radios.value]["label"],nameToData[radios.value]["unit"],nameToData[relatedTo.value]["label"],nameToData[relatedTo.value]["unit"]);  
     }
 langSelect.onchange=function(){
     if(langSelect.value=="bg"){
@@ -472,14 +481,14 @@ var windows=[
             if(n==3 && map2==undefined){
               initObsMap();
 }
-        }
+}
         function windowClose(){
           for(var i=0; i<windows.length;i++){
             windows[i].style.display="none";}}
 
 
 function initObsMap(){
-            map2 = L.map('map2').setView([43, 25], 13);
+map2 = L.map('map2').setView([43, 25], 13);
 setLocation();
   // Add OpenStreetMap tiles
   L.tileLayer('https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png', {
@@ -541,8 +550,8 @@ function calcObservation(lat0,lat1,lon0,lon1,alt0,alt1,R){
 
 function loadData(json){
   json=filter(json,limits);
-        if(json.time && zeroHour==undefined){
-          zeroHour=json.time;
+        if(json["UT[s]"] && zeroHour==undefined){
+          zeroHour=json["UT[s]"];
         }
         if (json["lat"] ) {
         if(json["lat"]>=0){
@@ -551,32 +560,29 @@ function loadData(json){
     polyline.addLatLng(latlng);}}
           for(var [parameter, value] of Object.entries(json)){
               value=parseFloat(value);
-              if(!allData[parameter]){
-                allData[parameter]=[];
-              }
-              if(!allData[parameter+"_byTime"]){
-                allData[parameter+"_byTime"]=[];
-              }
-              data[parameter]=value;
-              if(json["altitude"]){
-              allData[parameter].push({x:parseFloat(value),y:parseFloat(json.altitude)});}
-              if(json["time"]){
-                allData[parameter+"_byTime"].push({y:parseFloat(value),x:parseFloat(((json.time-zeroHour)/1000/3600))});
-              }
+              for(var col in nameToData){
+                if(!allData[parameter+"_by_"+col]){
+                  allData[parameter+"_by_"+col]=[];
+                }
+                data[parameter]=value;
+                if(json[nameToData[col]["data"][0]]){
+                  allData[parameter+"_by_"+col].push({y:parseFloat(value),x:parseFloat(json[nameToData[col]["data"][0]])});
+                }
             }
-            var row="\n"
-            for(key of csvKeys){
-              if(data[key]){
-                row+=data[key];
-              }else{
-                row+="undefined";
-              }
-              row+=",";
+          }
+          var row="\n"
+          for(key of csvKeys){
+            if(data[key]){
+              row+=data[key];
+            }else{
+              row+="undefined";
             }
-            csvContent+=row;
-            URL.revokeObjectURL(csvUrl);
-            csvUrl = URL.createObjectURL(new Blob([csvContent], { type: "text/csv;charset=utf-8;" }));
-            if (csvFileLink) csvFileLink.href = csvUrl;
+            row+=",";
+          }
+          csvContent+=row;
+          URL.revokeObjectURL(csvUrl);
+          csvUrl = URL.createObjectURL(new Blob([csvContent], { type: "text/csv;charset=utf-8;" }));
+          if (csvFileLink) csvFileLink.href = csvUrl;
 
         
 }
