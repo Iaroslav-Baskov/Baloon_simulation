@@ -90,6 +90,7 @@ function calcAirmass(altitude,z){
     const Re = 6371000.0;
     const H =8500;
     const R = Re + altitude;
+<<<<<<< HEAD
     
     // We must clamp cosZ to prevent the math from breaking 
     // when looking at the Earth's surface (below horizon)
@@ -106,6 +107,11 @@ function calcAirmass(altitude,z){
 
     // 3. Final Physical Airmass
     // We normalize by H so that at sea-level zenith, airmass = 1.0
+=======
+    const cosZ = Math.cos(z);
+    const path = Math.sqrt(R * R * cosZ * cosZ + 2.0 * R * H + H * H) - R * cosZ;
+    const hRel = Math.exp(-altitude / H);
+>>>>>>> 00bf947 (update description and diagrams)
     return (path / H) * hRel;
 }
 gpu.addFunction(calcAirmass);
@@ -119,6 +125,10 @@ function calcScattering(theta,airmass,wave4){
     const scatteringBase =( 1+ Math.cos(theta) * Math.cos(theta)) / 2.0;
     return scatteringBase*wave4*airmass;
 }
+<<<<<<< HEAD
+=======
+
+>>>>>>> 00bf947 (update description and diagrams)
 gpu.addFunction(calcScattering);
 
 const renderSky = gpu.createKernel(drawStar)

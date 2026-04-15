@@ -1,8 +1,11 @@
 var redColor="#F00";
 var redColor2="#800";
 const diagramsIm=document.getElementById("diagramsIm");
+<<<<<<< HEAD
 diagramsIm.width=diagramsIm.clientWidth;
 diagramsIm.height=diagramsIm.clientHeight;
+=======
+>>>>>>> 00bf947 (update description and diagrams)
 var terrain=[];
 var langSelect=document.getElementById("lang");
 var cloudThickness=1000;
@@ -29,6 +32,7 @@ var mode="baloon";
     var dmax=200000;
 var data={
   altitude:1000,
+<<<<<<< HEAD
   time:6500000000,
 }
 var limits={
@@ -44,21 +48,50 @@ var limits={
   pm1_0:{max:300, min:0, exceptions:[]},
   pm10_0:{max:300, min:0, exceptions:[]},
   pm2_5:{max:300, min:0, exceptions:[]},
+=======
+}
+var limits={
+  "lat":{max:90, min:-90, exceptions:[]},
+  "lon":{max:180, min:-180, exceptions:[]},
+  "altitude":{max:100000, min:-1000, exceptions:[]},
+  "AHT_temp[C]":{max:60, min:-80, exceptions:[]},
+  "BMP_temp[C]":{max:60, min:-80, exceptions:[]},
+  "gtemp[C]":{max:60, min:-80, exceptions:[]},
+  "voltage":{max:5, min:0, exceptions:[0]},
+  "AHT_hum":{max:100, min:0, exceptions:[]},
+  "BMP_pres":{max:200000, min:3000, exceptions:[]},
+  "pm1_0":{max:300, min:0, exceptions:[]},
+  "pm10_0":{max:300, min:0, exceptions:[]},
+  "pm2_5":{max:300, min:0, exceptions:[]},
+>>>>>>> 00bf947 (update description and diagrams)
   "03µm":{max:300, min:0, exceptions:[]},
   "05µm":{max:300, min:0, exceptions:[]},
   "10µm":{max:300, min:0, exceptions:[]},
 };
 var csvKeys=[
+<<<<<<< HEAD
     "AHT_temp[C]", "AHT_hum", "BMP_temp[C]", "BMP_pres",
     "ax[m/s2]", "ay[m/s2]", "az[m/s2]", "gx", "gy", "gz", "gtemp",
     "magx[uT]", "magy", "magz[uT]", "voltage",
     "pm1_0", "pm2_5", "pm10_0", "p03um", "p05um", "p10um","lon","lat","altitude","UT[s]"
+=======
+    "now[ms]","AHT_temp[C]", "AHT_hum", "BMP_temp[C]", "BMP_pres",
+    "ax[m/s2]", "ay[m/s2]", "az[m/s2]", "gx", "gy", "gz", "gtemp[C]",
+    "magx[uT]", "magy[uT]", "magz[uT]", "voltage",
+    "pm1_0", "pm2_5", "pm10_0", "p03um", "p05um", "p10um","lon","lat","altitude","UT[s]","malformed"
+>>>>>>> 00bf947 (update description and diagrams)
 ];
 
 const nameToData={
   "altitude":{"data":["altitude"],"unit":"m","labels":{"en":["altitude"],"bg":["Височина"]},"label":{"en":"altitude","bg":"Височина"}},
+<<<<<<< HEAD
   "time":{"data":["UT[s]"],"unit":"s","labels":{"en":["time"],"bg":["време"]},"label":{"en":"Universal Time","bg":"Универсално време"}},
   "temperature":{"data":["AHT_temp[C]","BMP_temp[C]","gtemp"],"unit":"°C","labels":{"en":["outside temperature 1","outside temperature 2","inside temperature"],"bg":["Външна температура 1","Външна температура 2","Вътрешна температура"]},"label":{"en":"temperature","bg":"температура"}},
+=======
+  "now":{"data":["now[ms]"],"unit":"ms","labels":{"en":["probe time"],"bg":["Вътрешно време"]},"label":{"en":"probe time","bg":"Вътрешно време"}},
+  "time":{"data":["UT[s]"],"unit":"s","labels":{"en":["time"],"bg":["време"]},"label":{"en":"Universal Time","bg":"Универсално време"}},
+  "temperature":{"data":["AHT_temp[C]","BMP_temp[C]","gtemp[C]"],"unit":"°C","labels":{"en":["outside temperature 1","outside temperature 2","inside temperature"],"bg":["Външна температура 1","Външна температура 2","Вътрешна температура"]},"label":{"en":"temperature","bg":"температура"}},
+>>>>>>> 00bf947 (update description and diagrams)
   "pressure":{"data":["BMP_pres"],"unit":"Pa","labels":{"en":["pressure"],"bg":["Налягане"]},"label":{"en":"pressure","bg":"Налягане"}},
   "humidity":{"data":["AHT_hum"],"unit":"%","labels":{"en":["humidity"],"bg":["Влажност"]},"label":{"en":"humidity","bg":"Влажност"}},
   "PMconc":{"data":["pm1_0","pm2_5","pm10_0"],"unit":"µg/m³","labels":{"en":["pm1_0","pm2_5","pm10_0"],"bg":["pm1_0","pm2_5","pm10_0"]},"label":{"en":"Dist concentration","bg":"Концентрация на прахови частици"}},
@@ -99,6 +132,7 @@ var sightRay;
 
 var fog=new Image();
 fog.crossOrigin = "anonymous";
+<<<<<<< HEAD
 fog.src="./textures/fog.png"
 var boxFront=new Image();
 boxFront.crossOrigin = "anonymous";
@@ -115,11 +149,33 @@ clouds.src="./textures/clouds.png"
 var cur=new Image();
 cur.crossOrigin = "anonymous";
 cur.src="./textures/cur.png"
+=======
+fog.src="./textures/graphics/fog.png"
+var boxFront=new Image();
+boxFront.crossOrigin = "anonymous";
+boxFront.src="./textures/graphics/Back.png"
+var baloon=new Image();
+baloon.crossOrigin = "anonymous";
+baloon.src="./textures/graphics/baloon.png"
+var cum=new Image();
+cum.crossOrigin = "anonymous";
+cum.src="./textures/graphics/cum.png"
+var clouds=new Image();
+clouds.crossOrigin = "anonymous";
+clouds.src="./textures/graphics/clouds.png"
+var cur=new Image();
+cur.crossOrigin = "anonymous";
+cur.src="./textures/graphics/cur.png"
+>>>>>>> 00bf947 (update description and diagrams)
 
 for(var i=0;i<5;i++){
 terrain[i]=new Image();
 terrain[i].crossOrigin = "anonymous";
+<<<<<<< HEAD
 terrain[i].src="./textures/terrain"+i+".png"}
+=======
+terrain[i].src="./textures/graphics/terrain"+i+".png"}
+>>>>>>> 00bf947 (update description and diagrams)
 
 var sun={x:width/4,y:0}
 
@@ -229,10 +285,18 @@ function makeNoise(context) {
     }
   }
   function drawWorld(){
+<<<<<<< HEAD
           var a=Math.sin(data["UT[s]"]/1000/3600/24%1*2*Math.PI-Math.PI/2);
           sun.y=height/2-45*a/aHeight*height;
           document.getElementById("rssi").innerText="rssi:" + data.rssi + "db";
           document.getElementById("snr").innerText="snr:" + data.snr + "db";
+=======
+    console.log(data);
+    var a=Math.sin((data["UT[s]"]/1000/3600/24)%1*2*Math.PI-Math.PI/2);
+    sun.y=height/2-45*a/aHeight*height;
+    document.getElementById("rssi").innerText="RSSI:" + data.rssi + "dBm";
+    document.getElementById("snr").innerText="SNR:" + data.snr + "dB";
+>>>>>>> 00bf947 (update description and diagrams)
     horyzont=Math.acos(R/(R+data["altitude"]))/Math.PI*180;
     var horyzontH=Math.floor(horyzont*height/aHeight+height/2);
     var add=0;
@@ -271,7 +335,12 @@ function makeNoise(context) {
   }
 }
     drawBox(ctx,boxFront,width/2,height*0.65-1.5*m,0.3*m,roll);
+<<<<<<< HEAD
     drawBox(ctx,baloon,width/2,height*0.65-1.5*m,2*m,roll);
+=======
+    let size=2*m*Math.cbrt(allData["BMP_pres"][0]/data["BMP_pres"]);
+    drawBox(ctx,baloon,width/2,height*0.65-1.5*m,size,roll);
+>>>>>>> 00bf947 (update description and diagrams)
     ctx.drawImage(fog,0,-cloudAltitude[0]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
     ctx.drawImage(fog,0,-cloudAltitude[1]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
   ctx.drawImage(fog,0,-cloudAltitude[2]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
@@ -327,6 +396,7 @@ terrain[terrain.length-1].onload();
 }
 	function update(json){
 	    //tuk promenlivata json e samo nai noviq element
+<<<<<<< HEAD
           loadData(json);
           clearTimeout(noDataEvent);
           clearInterval(noise);
@@ -355,6 +425,27 @@ terrain[terrain.length-1].onload();
             changeData();
         }
         map.setView([data.lat, data.lon], map.getZoom());
+=======
+          if(loadData(json)){
+            clearTimeout(noDataEvent);
+            clearInterval(noise);
+            noDataEvent=setTimeout(function(){
+              noise=setInterval(() => {
+                makeNoise(ctx);
+              }, 50);
+            },40000);
+            
+            yaw=Math.atan2(data["magy[uT]"],data["magx[uT]"])+Math.PI ;
+            roll=Math.atan2(-data["ay[m/s2]"],data["az[m/s2]"]);
+            pitch=Math.atan2(data["ax[m/s2]"],data["az[m/s2]"]);
+            drawWorld();
+            if(observer!=undefined){
+              observerMoved();
+            }
+            changeData();
+          map.setView([data.lat, data.lon], map.getZoom());
+      }
+>>>>>>> 00bf947 (update description and diagrams)
 	}
 radios.onchange=changeData;
 relatedTo.onchange=changeData;
@@ -364,7 +455,11 @@ function changeData() {
     var relationKey = relatedTo.value;
 
     // 2. Guard: Ensure the selected keys exist in our mapping
+<<<<<<< HEAD
     if (!nameToData[metricKey] || !nameToData[relationKey]) return;
+=======
+    if (!nameToData.hasOwnProperty(metricKey) || !nameToData.hasOwnProperty(relationKey)) return;
+>>>>>>> 00bf947 (update description and diagrams)
 
     var input = [];
     var metricInfo = nameToData[metricKey];
@@ -378,8 +473,14 @@ function changeData() {
           input[input.length-1].push({x:allData[relationInfo["data"][0]][i], y:allData[col][i]});
         }
     }
+<<<<<<< HEAD
 
     // 4. Update the chart with the new labels and units
+=======
+    if(myChart==undefined){
+      drawChart(input,metricInfo["labels"][langSelect.value],relationInfo["label"][langSelect.value],relationInfo["unit"]);
+    }
+>>>>>>> 00bf947 (update description and diagrams)
     updateChart(
         input,
         metricInfo["labels"][langSelect.value],
@@ -414,6 +515,7 @@ langSelect.onchange=function(){
 }
 var myChart;
 var font=parseFloat(getComputedStyle(document.body).getPropertyValue('font-size'));
+<<<<<<< HEAD
 Chart.defaults.plugins.legend.labels.color = redColor;
 Chart.defaults.scale.border.color=redColor2;
 Chart.defaults.scale.grid.color=redColor2;
@@ -445,12 +547,67 @@ myChart=new Chart("diagramsIm", {
 });
 myChart.options.responsive=true;
 updateChart(Data,labels,xName,xUnit)
+=======
+Chart.defaults.plugins.legend.labels.color = "black";
+Chart.defaults.scale.border.color="grey";
+Chart.defaults.scale.grid.color="grey";
+Chart.defaults.plugins.title.color = "black";
+Chart.defaults.scale.ticks.color = "black";
+Chart.defaults.font = {
+  size: font,
+  family: 'Times New Roman, Times, serif',
+  weight: 'normal',
+};
+function drawChart(Data,labels,xName,xUnit){
+  var dsets=[];
+  for(var i=0; i<Data.length;i++){
+    dsets.push({
+        pointRadius: 1,
+        label: labels[i],
+        data: Data[i]
+      });
+  }
+  myChart=new Chart("diagramsIm", {
+    type: "scatter",
+    plugins: [{
+              // Custom plugin to force white background
+              id: 'custom_canvas_background_color',
+              beforeDraw: (chart) => {
+                      const {ctx} = chart;
+                      ctx.save();
+                      ctx.globalCompositeOperation = 'destination-over';
+                      ctx.fillStyle = 'white';
+                      ctx.fillRect(0, 0, chart.width, chart.height);
+                      ctx.restore();
+                    }
+          }],
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+              animation: {
+          duration: 0
+      },
+      }
+  });
+  updateChart(Data,labels,xName,xUnit)
+>>>>>>> 00bf947 (update description and diagrams)
 }
 function updateChart(Data,labels,xName,xUnit,yName,yUnit){
 var dsets=[];
 for(var i=0; i<Data.length;i++){
+<<<<<<< HEAD
   dsets.push({
       pointRadius: 1,
+=======
+  rad=width/Data[i].length/2;
+  if(rad<0.2){
+    rad=0.2;
+  } else if(rad>5){
+    rad=5;
+  }
+  dsets.push({
+      pointRadius: РАД,
+>>>>>>> 00bf947 (update description and diagrams)
       label: labels[i],
       data: Data[i]
     });
@@ -460,7 +617,11 @@ myChart.data.datasets=dsets;
 myChart.options.scales.x={title:{
                   display: true,
                   text: xName,
+<<<<<<< HEAD
                   color: redColor
+=======
+                  color: "black"
+>>>>>>> 00bf947 (update description and diagrams)
                 },
                 ticks: {
                     callback: function(value, index, ticks) {
@@ -470,7 +631,11 @@ myChart.options.scales.x={title:{
 myChart.options.scales.y={title:{
                   display: true,
                   text: yName,
+<<<<<<< HEAD
                   color: redColor
+=======
+                  color: "black"
+>>>>>>> 00bf947 (update description and diagrams)
                 },
                 ticks: {
                     callback: function(value, index, ticks) {
@@ -488,8 +653,15 @@ var windows=[
   document.getElementById("observationWindow"),
   document.getElementById("contacts")];
         function windowShow(n){
+<<<<<<< HEAD
             windowClose();
             windows[n].style.display="block";
+=======
+
+            windowClose();
+            windows[n].style.display="flex";
+            changeData();
+>>>>>>> 00bf947 (update description and diagrams)
             if(n==3 && map2==undefined){
               initObsMap();
 }
@@ -561,6 +733,7 @@ function calcObservation(lat0,lat1,lon0,lon1,alt0,alt1,R){
 }
 
 function loadData(json){
+<<<<<<< HEAD
   json=filter(json,limits);
 
         if (json["lat"] ) {
@@ -568,28 +741,54 @@ function loadData(json){
                var latlng = L.latLng(json["lat"], json["lon"]);
     marker.setLatLng(latlng); 
     polyline.addLatLng(latlng);}}
+=======
+  if(json["malformed"]==0){
+        json=filter(json,limits);
+        if (json.hasOwnProperty("lat")) {
+        var latlng = L.latLng(json["lat"], json["lon"]);
+        marker.setLatLng(latlng); 
+        polyline.addLatLng(latlng);}
+>>>>>>> 00bf947 (update description and diagrams)
           for(var index in csvKeys){
             var key=csvKeys[index];
                 if(!allData[key]){
                   allData[key]=[];
                 }
+<<<<<<< HEAD
                 if(json[key]){
                 value=parseFloat(json[key]);
                 data[key]=value;
                 allData[key].push(value);}
+=======
+                
+                if(json.hasOwnProperty(key)){
+                  value=parseFloat(json[key]);
+                  data[key]=value;
+                  allData[key].push(value);}
+>>>>>>> 00bf947 (update description and diagrams)
                 else{
                   data[key]=undefined;
                   allData[key].push(undefined);
                 }
           }
+<<<<<<< HEAD
         
+=======
+        return true;
+    }
+    return false;
+>>>>>>> 00bf947 (update description and diagrams)
 }
 function filter(json,limits){
   var output={};
   for([parameter,value] of Object.entries(json)){
 
     var ok=true;
+<<<<<<< HEAD
     if(limits[parameter]){
+=======
+    if(limits.hasOwnProperty(parameter)){
+>>>>>>> 00bf947 (update description and diagrams)
       if(limits[parameter].max<value){
         ok=false;
       }
