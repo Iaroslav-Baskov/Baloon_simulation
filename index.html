@@ -12,11 +12,7 @@
   --roll:0;
   --pitch:0;
   --side:calc(var(--font) * 3 );
-<<<<<<< HEAD
-  --altBarLength:calc(100vh - 2 * var(--font));
-=======
   --altBarLength:calc(100vh - 2rem);
->>>>>>> 00bf947 (update description and diagrams)
   --maxAlt:40000;
   --space:1000;
   --red:red;
@@ -32,32 +28,21 @@
         h1{
             display: block;
             text-align: center;
-<<<<<<< HEAD
-            padding: calc(var(--font) / 2);
-=======
             padding: 0.5em;
->>>>>>> 00bf947 (update description and diagrams)
         }
         button{
             background-color: black;
             outline: none;
             border: 1px solid var(--darkred);
-<<<<<<< HEAD
-            padding: calc(var(--font)/2);
-=======
+
             padding: 1em;
->>>>>>> 00bf947 (update description and diagrams)
             cursor: pointer;
         }
         p{
             display: inline;
         }
         body *, body{
-<<<<<<< HEAD
-            font-family: 'myFont'!important;
-=======
             font-family: 'myFont';
->>>>>>> 00bf947 (update description and diagrams)
             font-size: var(--font);
             color: var(--red);
             text-decoration: none;
@@ -79,17 +64,6 @@
         }
         .discription p{
             display: block;
-<<<<<<< HEAD
-            margin-bottom: var(--font);
-        }
-        .icon{
-            display: inline;
-            height: calc(var(--font) * 2);
-            margin-top: calc(0px - var(--font) / 2);
-            margin-bottom: calc(0px - var(--font) / 2);
-            padding: 0px;
-        }
-=======
             margin-bottom: 1em;
         }
 .icon {
@@ -102,7 +76,7 @@ image-rendering: high-quality;
     
     image-rendering: -webkit-optimize-contrast;
 }
->>>>>>> 00bf947 (update description and diagrams)
+
         .menu{
             cursor: pointer;
             text-align: left;
@@ -115,31 +89,18 @@ image-rendering: high-quality;
             flex-direction:column;
             display:flex;
             background-color: black;
-<<<<<<< HEAD
-            border-bottom: var(--red) solid 1px;
-=======
             border-bottom: var(--darkred) solid 1px;
->>>>>>> 00bf947 (update description and diagrams)
+
         }
         .menu>a, .menu>select{
             display: none;
             cursor:pointer;
-<<<<<<< HEAD
-            border-top: var(--red) solid 1px;
-=======
             border-top: var(--darkred) solid 1px;;
->>>>>>> 00bf947 (update description and diagrams)
+
         }
         .menu:focus-within>a, .menu:focus-within>select{
             display: inline-block;
         }
-<<<<<<< HEAD
-        .menu>*, select{      
-            background: black;
-            margin:0;     
-            display:block;
-            padding: calc(var(--font) / 2);
-=======
         .menu>*, select{   
             display:inline-block;
             background: black;
@@ -153,17 +114,14 @@ image-rendering: high-quality;
             width: 3em;
             vertical-align: middle;
             text-align: center;
->>>>>>> 00bf947 (update description and diagrams)
+
         }
         .file{
             box-sizing: border-box;
             display: flex;
             border: 1px solid var(--darkred);
-<<<<<<< HEAD
-            padding: calc(var(--font) / 2);
-=======
             padding: 0.5em;
->>>>>>> 00bf947 (update description and diagrams)
+
             vertical-align: middle;
             align-items:flex-start;
         }
@@ -177,19 +135,12 @@ image-rendering: high-quality;
             display: flex;
             flex-direction: column-reverse;
             border-right: 1px solid var(--red);
-<<<<<<< HEAD
-            width:calc(var(--font) * 2);
-            height:var(--altBarLength);
-            position: absolute;
-            bottom:var(--font);
-            right: var(--font);
-=======
             width:2em;
             height:var(--altBarLength);
             position: absolute;
             bottom:1em;
             right: 1em;
->>>>>>> 00bf947 (update description and diagrams)
+
         }
         .altitudeContainer>.unit{
             margin-left: auto;
@@ -214,19 +165,12 @@ image-rendering: high-quality;
             content: " ";
             width:0px;
             height: 0px;
-<<<<<<< HEAD
-            border:calc(var(--font) / 2) solid transparent;
-            margin-right: calc(var(--font) / 4);
-        }
-        .alt::after{
-            border-left:calc(var(--font) / 2) solid var(--red);
-=======
             border:0.5em solid transparent;
             margin-right: 0.25em;
         }
         .alt::after{
             border-left:0.5em solid var(--red);
->>>>>>> 00bf947 (update description and diagrams)
+
         }
         .alt{
             bottom:calc(var(--altBarLength) / var(--maxAlt) * var(--altitude));
@@ -234,21 +178,13 @@ image-rendering: high-quality;
         .angle{
             display: inline-block;
             position: relative;
-<<<<<<< HEAD
-            background: url("textures/azimuth.png") calc(var(--font) * 16);
-            background-position: center;
-            background-size: cover;
-            transform: translate(50%,-50%);
-            left:var(--font);
-            bottom:var(--font);
-=======
             background: url("textures/graphics/azimuth.png") 1em;
             background-position: center;
             background-size: cover;
             transform: translate(50%,-50%);
             left:1em;
             bottom:1em;
->>>>>>> 00bf947 (update description and diagrams)
+
 	        margin-top: 50%;
 	        margin-bottom: -50%;
             margin-right: 50%;
@@ -267,11 +203,8 @@ image-rendering: high-quality;
 	.anglecontainer{
         overflow: hidden;
         box-sizing: border-box;
-<<<<<<< HEAD
-        padding: calc(var(--font));
-=======
         padding: 1em;
->>>>>>> 00bf947 (update description and diagrams)
+
         height: 100%;
 		position: fixed;
 		bottom:0;
@@ -290,20 +223,14 @@ image-rendering: high-quality;
         transition-duration: 0.5s;
     }
     .anglecontainer>div:not(.altitudeContainer){
-<<<<<<< HEAD
-        width: calc(100% - 2 * var(--font));
-=======
         width: calc(100% - 2em);
->>>>>>> 00bf947 (update description and diagrams)
+
         transition-duration: 0.5s;
     }
     .anglecontainer:focus-within{
         transition-duration: 0.5s;
-<<<<<<< HEAD
-  width:calc(min(30vw,23.33vh) + 2 * var(--font));
-=======
   width:calc(min(30vw,23.33vh) + 2em);
->>>>>>> 00bf947 (update description and diagrams)
+
 }
         .map{
             position: fixed;
@@ -314,13 +241,9 @@ image-rendering: high-quality;
             background: black;
         }
         .window{
-<<<<<<< HEAD
-            border: 1px solid var(--red);
-            padding: var(--font);
-=======
             flex-direction: column;
             padding: 2em;
->>>>>>> 00bf947 (update description and diagrams)
+
             position:fixed;
             top:0;
             left: 0;
@@ -330,19 +253,6 @@ image-rendering: high-quality;
             z-index: 4;
             display: none;
             box-sizing:border-box;
-<<<<<<< HEAD
-        }
-        .window .chart{
-            width: 100%;
-            height: calc(100% - var(--font) * 4);
-            
-        }
-        .window .dataSelectForm{
-            width:calc(var(--font) * 10);
-            position: absolute;
-            top:calc(var(--font) * 1);
-            left: calc(var(--font) * 1);
-=======
             align-items: stretch;
         }
         .window .chart{
@@ -358,7 +268,7 @@ image-rendering: high-quality;
             position: absolute;
             top:1em;
             left: 1em;
->>>>>>> 00bf947 (update description and diagrams)
+
         }
         .window *{
             z-index: 5;
@@ -368,18 +278,6 @@ image-rendering: high-quality;
             display:none;
         }
         .bg{
-<<<<<<< HEAD
-            display:unset;
-        }
-        .closer{
-            display:block;
-            padding: calc(var(--font) / 2);
-            position: absolute;
-            background: var(--red);
-            color:black;
-            top:0;
-            right:0;
-=======
             display:unset; 
         }
         .closer{
@@ -390,7 +288,7 @@ image-rendering: high-quality;
             color:black;
             top:2em;
             right:2em;
->>>>>>> 00bf947 (update description and diagrams)
+
             cursor: pointer;
         }
         select, select *{
@@ -401,18 +299,6 @@ image-rendering: high-quality;
         .downarrow{
             transform: scaleY(-1);
             position: absolute;
-<<<<<<< HEAD
-            right: var(--font);
-        }
-        .doc{
-            background-color: white;
-            font-family: 'Times New Roman', Times, serif;
-            color: black;
-        }
-        @media (orientation: landscape) {
-            .anglecontainer{
-                height: calc(100% - 3 * var(--font));
-=======
             right: 1em;
         }
         .doc{
@@ -462,7 +348,7 @@ image-rendering: high-quality;
         @media (orientation: landscape) {
             .anglecontainer{
                 height: calc(100% - 3em);
->>>>>>> 00bf947 (update description and diagrams)
+
                 bottom: 0;
             }
             .downarrow{
@@ -472,11 +358,8 @@ image-rendering: high-quality;
   --font:min(16px,1.3vw, 3vh);
 }
             .menu{
-<<<<<<< HEAD
-                padding: calc(var(--font) / 2);
-=======
                 padding: 0.5em;
->>>>>>> 00bf947 (update description and diagrams)
+
                 text-align: left;
                 border:0;
                 width:calc(100vw);
@@ -487,11 +370,6 @@ image-rendering: high-quality;
         }
        .menu>a, .menu>p{
             border:0;
-<<<<<<< HEAD
-            border-right: var(--red) solid 1px;
-            padding-right: var(--font);
-            padding-left: var(--font);
-=======
             border-right: var(--darkred) solid 1px;
             padding-right: 1em;
             padding-left: 1em;
@@ -499,7 +377,7 @@ image-rendering: high-quality;
         .listhead{
             display: inline-flex;
             width:auto;
->>>>>>> 00bf947 (update description and diagrams)
+
         }
 }
         @font-face {
@@ -510,31 +388,13 @@ image-rendering: high-quality;
     <script src="https://unpkg.com/gpu.js@latest/dist/gpu-browser.min.js"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-<<<<<<< HEAD
-      <link rel="icon" type="image/x-icon" href="textures/favicon.ico">
-=======
       <link rel="icon" type="image/x-icon" href="textures/icons/favicon.ico">
->>>>>>> 00bf947 (update description and diagrams)
+
 </head>
 <body style="margin: 0;padding: 0;">
     <canvas class="BG" id="sky" style="z-index:-3;"></canvas>
     <canvas class="BG" id="gpu" style="z-index:-2;mix-blend-mode: screen;"></canvas>
     <canvas class="BG" id="image"></canvas>
-<<<<<<< HEAD
-    <div class="menu" tabindex="1">
-        <div><img src="textures/favicon.ico" class="icon" alt="A"> Aurora
-        <img src="textures/A.png" class="icon downarrow"></div>
-        <a onclick="windowShow(0)"><img src="textures/diagrams.png" class="icon"> <p class="en">diagrams</p><p class="bg">диаграми</p></a>
-        <a onclick="windowShow(2)"><img src="textures/downloadFile.png" class="icon"> <p class="en">raw data files</p><p class="bg">сурови данни</p></a>
-        <a onclick="windowShow(3)"><img src="textures/observation.png" class="icon"> <p class="en">Aurora observation</p><p class="bg">наблюдавай Аврора</p></a>
-        <a onclick="windowShow(1)"><img src="textures/us.png" class="icon"> <p class="en">about us</p><p class="bg">за нас</p></a>
-        <a onclick="windowShow(4)"><img src="textures/phone.png" class="icon"> <p class="en">contacts</p><p class="bg">контакти</p></a>
-        <select name="lang" id="lang" tabindex="2">
-        <option class="option" value="bg"><p>Български</p></option>
-        <option class="option" value="en"><p>English</p></option>
-</select>
-    </div>
-=======
     <nav class="menu" tabindex="1">
         <div><div class="listhead"><img src="textures/icons/favicon.ico" class="icon" alt="A"></div> AURORA
         <img src="textures/icons/A.png" class="icon downarrow"></div>
@@ -547,27 +407,20 @@ image-rendering: high-quality;
         <option class="option" value="bg"><p>БЪЛГАРСКИ</p></option>
         <option class="option" value="en"><p>ENGLISH</p></option>
 </select>
-</nav>
->>>>>>> 00bf947 (update description and diagrams)
+    </nav>
+
         <div class="map" id="map">
 
         </div>
     <div class="anglecontainer" tabindex="1">
-<<<<<<< HEAD
-    <div class="angle"><div style='content: url("textures/redUp.png");transform: translate(50%,-50%) rotate(calc(var(--yaw) * 1deg));'></div></div>
-    <div class="angle" ><div style='content: url("textures/redFront.png");transform: translate(50%,-50%) rotate(calc(var(--roll) * 1deg));'></div></div>
-    <div class="angle"><div style='content: url("textures/redSide.png");transform: translate(50%,-50%) rotate(calc(var(--pitch) * 1deg));'></div></div>
-        
-        <div class="file" id="rssi">rssi: -50db</div>
-        <div class="file" id="snr">snr: 10db</div>
-=======
+
     <div class="angle"><div style='content: url("textures/graphics/redUp.png");transform: translate(50%,-50%) rotate(calc(var(--yaw) * 1deg));'></div></div>
     <div class="angle" ><div style='content: url("textures/graphics/redFront.png");transform: translate(50%,-50%) rotate(calc(var(--roll) * 1deg));'></div></div>
     <div class="angle"><div style='content: url("textures/graphics/redSide.png");transform: translate(50%,-50%) rotate(calc(var(--pitch) * 1deg));'></div></div>
         
         <div class="file" id="rssi">RSSI: -50db</div>
         <div class="file" id="snr">SNR: 10db</div>
->>>>>>> 00bf947 (update description and diagrams)
+
     <div class="altitudeContainer">
         <div class="alt marker" id="marker">
         </div>
@@ -615,11 +468,7 @@ image-rendering: high-quality;
     </div>
     </div>
     <div class="window" id="diagrams">
-<<<<<<< HEAD
 
-
-=======
->>>>>>> 00bf947 (update description and diagrams)
         <form style="width: 100%;">
             <p class="en">Data:</p><p class="bg">Данни:</p>
 	    <select name="selectData" id="selectData">
@@ -629,25 +478,16 @@ image-rendering: high-quality;
             </select>
         </form>
                 <div class="chart">
-<<<<<<< HEAD
-        <canvas id="diagramsIm">
-=======
         <canvas id="diagramsIm" >
->>>>>>> 00bf947 (update description and diagrams)
+
             
         </canvas></div>
         <a class="closer" onclick="windowClose()">X</a>
     </div>
+    
     <div class="window" id="about">
         <div style="width:100%;height: 100%;display: flex;flex-direction: column;">
         <div class="discription doc">
-<<<<<<< HEAD
-
-            <h1>Какво е “Aurora”?</h1>
-            <p>“Aurora” е проект, имащ за цел създаването и изстрелването на метеорологичен балон, способен да достигне до 30 километра височина – близо до границата на Космоса. Нашата цел е да заснемем уникални кадри от високите слоеве на атмосферата, да проведем научни експерименти и да вдъхновим повече млади хора като нас да се занимават с наука. Проектът съчетава инженерни, научни и маркетингови усилия – от изграждането на специална сондова кутия и електроника, до рекламна кампания, насочена към широката публика. 
-            <H1>Екип</H1><p>
-Ние сме екип от десетокласници, вдъхновени от науката. Започнахме като просто група ентусиазирани приятели, но идеите ни бързо се превърнаха в реалност и вече сме много повече заедно. Групата ни включва хора с разнообразни интереси - от изкуство до физика и електроника. 
-=======
             <div class="bg">
             <H1 style="position:fixed;top:0;left:0"><img src="textures/icons/favicon.ico" class="icon" alt="A"></H1>
             <H1>ПРОЕКТ "АВРОРА"</H1>
@@ -803,22 +643,13 @@ image-rendering: high-quality;
 <p>The integration of a dual communication system via LoRa and GSM ensures not only a continuous flow of real-time data during flight but also security in locating the probe after landing. The use of specialized antennas like the Halo and Yagi-Uda compensates for the difficulties of long-distance transmission and specific polarization requirements. Results from preliminary ground tests confirm that the chosen methods for thermal insulation and data transmission are stable, and the modular approach to construction allows for flexibility and resistance to mechanical stress.
 <p>The project proves that with modern microcontrollers like the ESP32 and precisely calibrated sensors, it is entirely possible to conduct scientific research at the edge of space. The created platform is not just a research tool but a working model for an autonomous system capable of functioning in an aggressive environment. The achieved results lay a solid foundation for future experiments related to environmental monitoring and air mass analysis at high altitudes, while demonstrating a high degree of engineering adaptability.
             </div>
->>>>>>> 00bf947 (update description and diagrams)
-            </div></div>
+
+            </div>
+        </div>
         <a class="closer" onclick="windowClose()">X</a>
     </div>
     <div class="window" id="rawDataWindow">
         <h1><p class="en">You can download some data from Aurora here:</p><p class="bg">Тук можете да изтетлите някои данни събрани от сондата:</p></h1>
-<<<<<<< HEAD
-	    <a id="csvFile" class="file"><img src="textures/tableFile.png"> &nbsp;<p class="en">CSV sensor data table</p><p class="bg">Таблица с данни от сензори в CSV</p></a>
-        <a id="videoFile" class="file"><img src="textures/videoFile.png"> &nbsp;<p class="en">Flight video will exist after mission end</p><p class="bg">Очаквайте видео от полета след края на мисията</p></a>
-        <a class="closer" onclick="windowClose()">X</a>
-    </div>
-    <div class="window" id="observationWindow">
-	<h1><div style="display: inline-block;padding: calc(var(--font) / 2);"><p class="en">
-Where to watch to see Aurora from your location:</p><p class="bg">Накъде да гледате за да наблюдавате Aurora от вашето местоположение:&nbsp;</p></div><button onclick="setLocation()">use your location</button></h1>
-        <div style="height: calc(100% - var(--font) * 7); width: 100%;" id="map2">
-=======
 	    <a id="csvFile" class="file"><img src="textures/icons/tableFile.png"> &nbsp;<p class="en">CSV sensor data table</p><p class="bg">Таблица с данни от сензори в CSV</p></a>
         <a id="videoFile" class="file"><img src="textures/icons/videoFile.png"> &nbsp;<p class="en">Flight video will exist after mission end</p><p class="bg">Очаквайте видео от полета след края на мисията</p></a>
         <a class="closer" onclick="windowClose()">X</a>
@@ -827,24 +658,18 @@ Where to watch to see Aurora from your location:</p><p class="bg">Накъде �
 	<h1><div style="display: inline-block;padding: 0.5em;"><p class="en">
 Where to watch to see Aurora from your location:</p><p class="bg">Накъде да гледате за да наблюдавате Aurora от вашето местоположение:&nbsp;</p></div><button onclick="setLocation()">use your location</button></h1>
         <div style="flex-grow: 1; width: 100%;" id="map2">
->>>>>>> 00bf947 (update description and diagrams)
+
         </div>
 
         <a class="closer" onclick="windowClose()">X</a>
     </div>
     <div class="window" id="contacts">
-<<<<<<< HEAD
-	<a class="file" href="tel:+359877914275"><img src="textures/phone.png"><div>&nbsp;: +359877914275</div></a>
-=======
 	<a class="file" href="tel:+359877914275"><img src="textures/icons/phone.png"><div>&nbsp;: +359877914275</div></a>
->>>>>>> 00bf947 (update description and diagrams)
+
     <a class="closer" onclick="windowClose()">X</a>
     </div>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="skyRender.js"></script>
 <script src="graphics.js"></script>
-<<<<<<< HEAD
 </body>
-=======
-</body>
->>>>>>> 00bf947 (update description and diagrams)
+
