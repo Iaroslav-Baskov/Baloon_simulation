@@ -609,7 +609,7 @@ function createTable(){
   for(let name in allKeys){
     if(allKeys[name]["table"]){
       let label=nameToData[allKeys[name]["name"]]['label'][langSelect.value]
-      let element = "<div class='file'>"+label+":<div style='flex-grow:1;'></div><div  id='"+name+"'></div></div>";
+      let element = "<div class='file'>"+label+":<div style='flex-grow:1;'></div><div  id='"+name+"' style='min-width:5em'></div></div>";
       table.innerHTML=table.innerHTML+element;}}
 }
 

@@ -171,7 +171,6 @@ image-rendering: high-quality;
         }
         .alt::after{
             border-left:0.5em solid var(--red);
-
         }
         .alt{
             bottom:calc(var(--altBarLength) / var(--maxAlt) * var(--altitude));
@@ -229,7 +228,7 @@ image-rendering: high-quality;
     }
     .anglecontainer:focus-within{
         transition-duration: 0.5s;
-  width:22em;
+        width:min(22em,60vw);
 
 }
         .map{
