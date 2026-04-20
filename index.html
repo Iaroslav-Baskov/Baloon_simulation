@@ -8,8 +8,8 @@
         :root {
   --altitude:15000;
   --font:min(5vw, 2vh);
-  --yaw:0;
-  --roll:0;
+  --yaw:10;
+  --roll:100;
   --pitch:0;
   --side:calc(var(--font) * 3 );
   --altBarLength:calc(100vh - 2rem);
@@ -180,23 +180,23 @@ image-rendering: high-quality;
             position: relative;
             background: url("textures/graphics/azimuth.png") 1em;
             background-position: center;
-            background-size: cover;
-            transform: translate(50%,-50%);
+            background-repeat: no-repeat;
+            background-size:contain;
+            /* transform: translate(50%,-50%); */
             left:1em;
-            bottom:1em;
-
+            /* bottom:1em;
 	        margin-top: 50%;
 	        margin-bottom: -50%;
             margin-right: 50%;
-	        margin-left: -50%;
+	        margin-left: -50%; */
             z-index: 3;
-            
-		aspect-ratio: 1 / 1;
+            aspect-ratio: 1;
+            max-height: calc(30vh - 4.33em);
         }
         .angle div{
             position: absolute;
             display: inline-block;
-            width: 100%;
+            height: 100%;
             top:50%;
             right:50%;
         }
@@ -204,7 +204,6 @@ image-rendering: high-quality;
         overflow: hidden;
         box-sizing: border-box;
         padding: 1em;
-
         height: 100%;
 		position: fixed;
 		bottom:0;
@@ -229,7 +228,7 @@ image-rendering: high-quality;
     }
     .anglecontainer:focus-within{
         transition-duration: 0.5s;
-  width:calc(min(30vw,23.33vh) + 2em);
+  width:22em;
 
 }
         .map{
@@ -345,6 +344,11 @@ image-rendering: high-quality;
             font-size: calc(var(--font) * 0.8);
             font-style: italic;
         }
+        .table{
+            display:flex;
+            flex-direction:column;
+        }
+
         @media (orientation: landscape) {
             .anglecontainer{
                 height: calc(100% - 3em);
@@ -417,9 +421,9 @@ image-rendering: high-quality;
     <div class="angle"><div style='content: url("textures/graphics/redUp.png");transform: translate(50%,-50%) rotate(calc(var(--yaw) * 1deg));'></div></div>
     <div class="angle" ><div style='content: url("textures/graphics/redFront.png");transform: translate(50%,-50%) rotate(calc(var(--roll) * 1deg));'></div></div>
     <div class="angle"><div style='content: url("textures/graphics/redSide.png");transform: translate(50%,-50%) rotate(calc(var(--pitch) * 1deg));'></div></div>
+    <div id="table">
         
-        <div class="file" id="rssi">RSSI: -50db</div>
-        <div class="file" id="snr">SNR: 10db</div>
+    </div>
 
     <div class="altitudeContainer">
         <div class="alt marker" id="marker">

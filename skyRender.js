@@ -10,8 +10,8 @@ const GPUcanvas = document.getElementById('gpu');
 const skyCanvas = document.getElementById('sky');
 const canvas=document.getElementById("image");
 
-const width = canvas.clientWidth;
-const height = canvas.clientHeight;
+const width = canvas.clientWidth*2;
+const height = canvas.clientHeight*2;
 
 const ctx = canvas.getContext("2d");
 const skyCtx = GPUcanvas.getContext("2d");

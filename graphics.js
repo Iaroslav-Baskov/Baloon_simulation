@@ -1,6 +1,7 @@
 var redColor="#F00";
 var redColor2="#800";
 const diagramsIm=document.getElementById("diagramsIm");
+var table=document.getElementById("table");
 var terrain=[];
 var langSelect=document.getElementById("lang");
 var cloudThickness=1000;
@@ -22,7 +23,7 @@ var root = document.querySelector(':root');
 var altMarker=document.getElementById('marker');
 const Atm=40000;
 const R=6357000;
-const m=height/aHeight*10;
+const m=height/aHeight*7;
 var mode="baloon";
     var dmax=200000;
 var data={
@@ -30,6 +31,84 @@ var data={
   time:6500000000,
 }
 
+
+function predictBatteryLevel(voltage,flags){
+  return 100;
+}
+function predictSunPosition(utHours, lat, lon, altitude) {
+    const rad = Math.PI / 180;
+
+    // 1. Get current date components to calculate the correct Julian Day
+    const now = new Date();
+    const year = now.getUTCFullYear();
+    const month = now.getUTCMonth() + 1; // JS months are 0-11
+    const day = now.getUTCDate();
+
+    // 2. Calculate Julian Day (standard astronomical formula)
+    // This converts the current date + your utHours into a continuous day count
+    const A = Math.floor(year / 100);
+    const B = 2 - A + Math.floor(A / 4);
+    const JD = Math.floor(365.25 * (year + 4716)) + 
+               Math.floor(30.6001 * (month + 1)) + 
+               day + B - 1524.5 + (utHours / 24);
+
+    const d = JD - 2451545.0; // Days since J2000.0 epoch
+
+    // 3. Solar Coordinates (Position of the sun in space)
+    const g = (357.529 + 0.98560028 * d) % 360; // Mean Anomaly
+    const q = (280.459 + 0.98564736 * d) % 360; // Mean Longitude
+    const L = (q + 1.915 * Math.sin(g * rad) + 0.020 * Math.sin(2 * g * rad)) % 360; // Ecliptic Longitude
+    const e = 23.439 - 0.00000036 * d; // Obliquity of Earth's axis
+
+    // 4. Celestial Coordinates (Equatorial system)
+    const ra = Math.atan2(Math.cos(e * rad) * Math.sin(L * rad), Math.cos(L * rad)) / rad;
+    const dec = Math.asin(Math.sin(e * rad) * Math.sin(L * rad)) / rad;
+
+    // 5. Sidereal Time (Earth's rotation relative to stars)
+    // We use the specific hours provided to find where your longitude is facing
+    const GMST = (280.46061837 + 360.98564736629 * d) % 360;
+    const LMST = GMST + lon;
+    
+    let H = LMST - ra; // Hour Angle
+    while (H < -180) H += 360;
+    while (H > 180) H -= 360;
+
+    // 6. Transformation to Horizontal Coordinates (Azimuth/Elevation)
+    const latRad = lat * rad;
+    const decRad = dec * rad;
+    const hRad = H * rad;
+
+    let elevation = Math.asin(Math.sin(latRad) * Math.sin(decRad) + 
+                    Math.cos(latRad) * Math.cos(decRad) * Math.cos(hRad)) / rad;
+    
+    let azimuth = Math.atan2(-Math.sin(hRad), 
+                  Math.cos(latRad) * Math.tan(decRad) - Math.sin(latRad) * Math.cos(hRad)) / rad;
+    
+    azimuth = (azimuth + 360) % 360;
+
+    // 7. Atmospheric Refraction Correction
+    // Higher altitude = thinner air = less "bending" of light
+    const pressureCorrection = Math.exp(-altitude / 8200);
+    if (elevation > -0.5) {
+        const ref = (1.02 / Math.tan((elevation + 10.3 / (elevation + 5.11)) * rad)) * pressureCorrection;
+        elevation += ref / 60;
+    }
+
+    return {
+        azimuth: Number(azimuth.toFixed(2)),
+        elevation: Number(elevation.toFixed(2)),
+        timestamp: now.getUTCFullYear() + "-" + (now.getUTCMonth() + 1) + "-" + now.getUTCDate()
+    };
+}
+
+var secondaryData={
+  "UT[h]":{"sources":["UT[s]"],"formula":(x)=>(x/3600)},
+  "now[h]":{"sources":["now[ms]"],"formula":(x)=>(x/3600/1000)},
+  "batteryLevel":{"sources":["voltage","flags"],"formula":(v,f)=>(predictBatteryLevel(v,f))},
+  "sunX":{"sources":["UT[h]","lat","lon","altitude"],"formula":(UT,lat,lon,alt)=>(predictSunPosition(UT, lat, lon, alt).azimuth/360*aWidth)},
+  "sunY":{"sources":["UT[h]","lat","lon","altitude"],"formula":(UT,lat,lon,alt)=>(height/2-predictSunPosition(UT, lat, lon, alt).elevation/180*aHeight)},
+  "heatingon":{"sources":["flags"],"formula":(f)=>(f&1)}
+}
 var limits={
   "lat":{max:90, min:-90, exceptions:[]},
   "lon":{max:180, min:-180, exceptions:[]},
@@ -47,25 +126,57 @@ var limits={
   "05µm":{max:300, min:0, exceptions:[]},
   "10µm":{max:300, min:0, exceptions:[]},
 };
-var csvKeys=[
-    "now[ms]","AHT_temp[C]", "AHT_hum", "BMP_temp[C]", "BMP_pres",
-    "ax[m/s2]", "ay[m/s2]", "az[m/s2]", "gx", "gy", "gz", "gtemp[C]",
-    "magx[uT]", "magy[uT]", "magz[uT]", "voltage",
-    "pm1_0", "pm2_5", "pm10_0", "p03um", "p05um", "p10um","lon","lat","altitude","UT[s]","malformed"
-];
-
+var allKeys={
+  "now[h]":{"csv":true,"table":false,"diagrams":true,"name":"now"},
+  "rssi":{"csv":true,"table":true,"name":"rssi"},
+  "snr":{"csv":true,"table":true,"name":"snr"},
+  "AHT_temp[C]":{"csv":true,"table":false,"name":"outside_temperature"},
+  "AHT_hum":{"csv":true,"table":true,"name":"humidity"},
+  "BMP_temp[C]":{"csv":true,"table":false,"name":"outside_temperature"},
+  "BMP_pres":{"csv":true,"table":true,"name":"pressure"},
+  "ax[m/s2]":{"csv":true,"table":false},
+  "ay[m/s2]":{"csv":true,"table":false},
+  "az[m/s2]":{"csv":true,"table":false},
+  "gx":{"csv":true,"table":false},
+  "gy":{"csv":true,"table":false},
+  "gz":{"csv":true,"table":false},
+  "gtemp[C]":{"csv":true,"table":true,"name":"inside_temperature"},
+  "magx[uT]":{"csv":true,"table":false},
+  "magy[uT]":{"csv":true,"table":false},
+  "magz[uT]":{"csv":true,"table":false},
+  "voltage":{"csv":true,"table":false,"name":"voltage"},
+  "pm1_0":{"csv":true,"table":false,"name":"PMconc"},
+  "pm2_5":{"csv":true,"table":false,"name":"PMconc"},
+  "pm10_0":{"csv":true,"table":false,"name":"PMconc"},
+  "p03um":{"csv":true,"table":false,"name":"PMnum"}, 
+  "p05um":{"csv":true,"table":false,"name":"PMnum"},
+  "p10um":{"csv":true,"table":false,"name":"PMnum"},
+  "lon":{"csv":true,"table":false},
+  "lat":{"csv":true,"table":false},
+  "altitude":{"csv":true,"table":false,"name":"altitude"},
+  "UT[h]":{"csv":true,"table":false,"name":"time"},
+  "malformed":{"csv":true,"table":false},
+  "batteryLevel":{"csv":true,"table":true,"name":"batteryLevel"},
+  "heatingon":{"csv":true,"table":false,"name":"heatingOn"},
+  "sunX":{"csv":false,"table":false},
+  "sunY":{"csv":false,"table":false},
+  "flags":{"csv":false,"table":false},
+};
 const nameToData={
   "altitude":{"data":["altitude"],"unit":"m","labels":{"en":["altitude"],"bg":["Височина"]},"label":{"en":"altitude","bg":"Височина"}},
-  "now":{"data":["now[ms]"],"unit":"ms","labels":{"en":["probe time"],"bg":["Вътрешно време"]},"label":{"en":"probe time","bg":"Вътрешно време"}},
-  "time":{"data":["UT[s]"],"unit":"s","labels":{"en":["time"],"bg":["време"]},"label":{"en":"Universal Time","bg":"Универсално време"}},
-  "temperature":{"data":["AHT_temp[C]","BMP_temp[C]","gtemp[C]"],"unit":"°C","labels":{"en":["outside temperature 1","outside temperature 2","inside temperature"],"bg":["Външна температура 1","Външна температура 2","Вътрешна температура"]},"label":{"en":"temperature","bg":"температура"}},
+  "now":{"data":["now[h]"],"unit":"h","labels":{"en":["probe time"],"bg":["Вътрешно време"]},"label":{"en":"probe time","bg":"Вътрешно време"}},
+  "time":{"data":["UT[h]"],"unit":"h","labels":{"en":["time"],"bg":["време"]},"label":{"en":"Universal Time","bg":"Универсално време"}},
+  "inside_temperature":{"data":["gtemp[C]"],"unit":"°C","labels":{"en":["temperature"],"bg":["температура"]},"label":{"en":"Inside temperature","bg":"Вътрешна температура"}},
+  "outside_temperature":{"data":["AHT_temp[C]","BMP_temp[C]"],"unit":"°C","labels":{"en":["outside temperature 1","outside temperature 2"],"bg":["Външна температура 1","Външна температура 2"]},"label":{"en":"Outside temperature","bg":"Външна температура"}},
   "pressure":{"data":["BMP_pres"],"unit":"Pa","labels":{"en":["pressure"],"bg":["Налягане"]},"label":{"en":"pressure","bg":"Налягане"}},
   "humidity":{"data":["AHT_hum"],"unit":"%","labels":{"en":["humidity"],"bg":["Влажност"]},"label":{"en":"humidity","bg":"Влажност"}},
   "PMconc":{"data":["pm1_0","pm2_5","pm10_0"],"unit":"µg/m³","labels":{"en":["pm1_0","pm2_5","pm10_0"],"bg":["pm1_0","pm2_5","pm10_0"]},"label":{"en":"Dist concentration","bg":"Концентрация на прахови частици"}},
   "PMnum":{"data":["p03um","p05um","p10um"],"unit":"n/0.1L","labels":{"en":["p03m","p05m","p10m"],"bg":["p03m","p05m","p10m"]},"label":{"en":"Dist count","bg":"Количество прахови частици"}},
   "rssi":{"data":["rssi"],"unit":"dbm","labels":{"en":["rssi"],"bg":["rssi"]},"label":{"en":"LoRa rssi","bg":"LoRa rssi"}},
   "snr":{"data":["snr"],"unit":"dbm","labels":{"en":["snr"],"bg":["snr"]},"label":{"en":"LoRa snr","bg":"LoRa snr"}},
-  "voltage":{"data":["voltage"],"unit":"V","labels":{"en":["volage"],"bg":["Напрежение"]},"label":{"en":"Battery voltage","bg":"Напрежение на батерията"}}
+  "voltage":{"data":["voltage"],"unit":"V","labels":{"en":["volage"],"bg":["Напрежение"]},"label":{"en":"Battery voltage","bg":"Напрежение на батерията"}},
+  "batteryLevel":{"data":["batteryLevel"],"unit":"%","labels":{"en":["charge"],"bg":["Ниво"]},"label":{"en":"Battery level","bg":"Ниво на батерията"}},
+  "heatingOn":{"data":["heatingon"],"unit":"","labels":{"en":["is on?"],"bg":["Включено"]},"label":{"en":"Heating activation","bg":"Активация на нагревателя"}},
 }
 const form = document.forms[0];
 const radios = form.elements["selectData"];
@@ -191,7 +302,7 @@ function makeNoise(context) {
   var pix = imgd.data;
 
   for (var i = 0, n = pix.length; i < n; i += 4) {
-      var c = 9 + Math.sin(i/100000 + noiseTime /7); // A sine wave of the form sin(ax + bt)
+      var c = 6 + Math.sin(i/(height*width)*10 + noiseTime /7); // A sine wave of the form sin(ax + bt)
       pix[i] = pix[i+1] = pix[i+2] = 40 * Math.random() * c; // Set a random gray
       pix[i+3] = 255; // 100% opaque
   }
@@ -231,18 +342,14 @@ function makeNoise(context) {
   function drawWorld(){
 
     console.log(data);
-    var a=Math.sin((data["UT[s]"]/1000/3600/24)%1*2*Math.PI-Math.PI/2);
-    sun.y=height/2-45*a/aHeight*height;
-    document.getElementById("rssi").innerText="RSSI:" + data.rssi + "dBm";
-    document.getElementById("snr").innerText="SNR:" + data.snr + "dB";
     horyzont=Math.acos(R/(R+data["altitude"]))/Math.PI*180;
     var horyzontH=Math.floor(horyzont*height/aHeight+height/2);
     var add=0;
     horyzontH=Math.floor(horyzontH);
-    if(horyzontH<sun.y){
-      add+=((sun.y-horyzontH)/height*aHeight/180*Math.PI*R/Atm);
+    if(horyzontH<data["sunY"]){
+      add+=((data["sunY"]-horyzontH)/height*aHeight/180*Math.PI*R/Atm);
     }
-    drawCanvas(renderSky(sun.x,sun.y,data["altitude"],aWidth,1));
+    drawCanvas(renderSky(data["sunX"],data["sunY"],data["altitude"],aWidth,1));
     skyCtx.clearRect(0,0,width,height);
     skyCtx.drawImage(drawCanvas.canvas, 0, 0);
     ctx.clearRect(0,0,width,height);
@@ -280,7 +387,7 @@ function makeNoise(context) {
     ctx.drawImage(fog,0,-cloudAltitude[1]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
   ctx.drawImage(fog,0,-cloudAltitude[2]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
   
-      const sunZ = (1.570796) + ((height / 2.0 -height+ sun.y) / width)* aWidth/180*3.14159265;
+      const sunZ = (1.570796) + ((height / 2.0 -height+ data["sunY"]) / width)* aWidth/180*3.14159265;
 
     const sunAirmass=Math.max(calcAirmass(data.altitude,sunZ),0);
 
@@ -304,6 +411,7 @@ function makeNoise(context) {
 
     ctx.drawImage(drawCanvas.canvas,0,0);
     ctx.restore();
+    createTable();
 }
 startData();
   terrain[terrain.length-1].onload=function(){
@@ -495,9 +603,20 @@ myChart.options.scales.y={title:{
                     }
                 }};
     myChart.update();}
+function createTable(){
+  table.innerHTML="";
+  for(let name in allKeys){
+    if(allKeys[name]["table"]){
+      let label=nameToData[allKeys[name]["name"]]['label'][langSelect.value]
+      let element = "<div class='file'>"+label+": <div  id='"+name+"'></div></div>";
+      table.innerHTML=table.innerHTML+element;}}
+  fillTable();
+}
 
-
-
+function fillTable(){
+  for(let name in allKeys){
+    if(allKeys[name]["table"]){
+      document.getElementById(name).innerHTML=""+ data[name] + nameToData[allKeys[name]["name"]]['unit']}}}
 var windows=[
   document.getElementById("diagrams"),
   document.getElementById("about"),
@@ -578,6 +697,25 @@ function calcObservation(lat0,lat1,lon0,lon1,alt0,alt1,R){
   sightRay.setLatLngs([{lat:lat0,lng:lon0},{lat:lat1,lng:lon1}]);
   observer.bindPopup(`distance: ${Math.floor(D/10)/100}km \n\r azimuth ${Math.floor(a*180/Math.PI*100)/100}° \n\r altitude ${Math.floor(h*180/Math.PI*100)/100}°`).openPopup();
 }
+function calcSecondaryData(json){
+  for(var key in secondaryData){
+    var sources=secondaryData[key].sources;
+    var values=[];
+    for(var i=0;i<sources.length;i++){
+      if(json.hasOwnProperty(sources[i])){
+        values.push(json[sources[i]]);
+      }else{
+        values.push(undefined);
+      }
+    }
+    if(values.includes(undefined)){
+      json[key]=undefined;
+    }else{
+      json[key]=secondaryData[key].formula(...values);
+    }
+  }
+  return json;
+}
 
 function loadData(json){
   if(json["malformed"]==0){
@@ -586,21 +724,21 @@ function loadData(json){
         var latlng = L.latLng(json["lat"], json["lon"]);
         marker.setLatLng(latlng); 
         polyline.addLatLng(latlng);}
-          for(var index in csvKeys){
-            var key=csvKeys[index];
-                if(!allData[key]){
-                  allData[key]=[];
-                }
-                
-                if(json.hasOwnProperty(key)){
-                  value=parseFloat(json[key]);
-                  data[key]=value;
-                  allData[key].push(value);}
-                else{
-                  data[key]=undefined;
-                  allData[key].push(undefined);
-                }
+        json=calcSecondaryData(json);
+        for(var index in allKeys){
+          var key=index;
+          if(!allData[key]){
+            allData[key]=[];
           }
+          if(json.hasOwnProperty(key)){
+            value=parseFloat(json[key]);
+            data[key]=value;
+            allData[key].push(value);}
+          else{
+            data[key]=undefined;
+            allData[key].push(undefined);
+          }
+        }
 
         return true;
     }
@@ -632,12 +770,12 @@ function filter(json,limits){
 }
 function generateCSV(){
   var csvContent = ""; 
-  for(key of csvKeys){
+  for(key of allKeys){
     csvContent+=key+",";
   }
   csvContent+="\n";
-    for(var i=0;i<allData[csvKeys[0]].length;i++){
-      for(key of csvKeys){
+    for(var i=0;i<allData[allKeys[0]].length;i++){
+      for(key of allKeys){
         csvContent+=allData[key][i]+",";
       }
       csvContent+="\n";
