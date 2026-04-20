@@ -189,6 +189,7 @@ for(var index in nameToData){
   }
 }
 relatedTo.innerHTML=radios.innerHTML;
+createTable();
 
 var noiseTime = 0;
 var noise=setInterval(() => {
@@ -411,7 +412,7 @@ function makeNoise(context) {
 
     ctx.drawImage(drawCanvas.canvas,0,0);
     ctx.restore();
-    createTable();
+    fillTable();
 }
 startData();
   terrain[terrain.length-1].onload=function(){
@@ -608,9 +609,8 @@ function createTable(){
   for(let name in allKeys){
     if(allKeys[name]["table"]){
       let label=nameToData[allKeys[name]["name"]]['label'][langSelect.value]
-      let element = "<div class='file'>"+label+": <div  id='"+name+"'></div></div>";
+      let element = "<div class='file'>"+label+":<div style='flex-grow:1;'></div><div  id='"+name+"'></div></div>";
       table.innerHTML=table.innerHTML+element;}}
-  fillTable();
 }
 
 function fillTable(){
