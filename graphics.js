@@ -130,10 +130,10 @@ var allKeys={
   "now[h]":{"csv":true,"table":false,"diagrams":true,"name":"now"},
   "rssi":{"csv":true,"table":true,"name":"rssi"},
   "snr":{"csv":true,"table":true,"name":"snr"},
-  "AHT_temp[C]":{"csv":true,"table":false,"name":"outside_temperature"},
-  "AHT_hum":{"csv":true,"table":true,"name":"humidity"},
+  "AHT_temp[C]":{"csv":true,"table":true,"name":"outside_temperature"},
+  "AHT_hum":{"csv":true,"table":false,"name":"humidity"},
   "BMP_temp[C]":{"csv":true,"table":false,"name":"outside_temperature"},
-  "BMP_pres":{"csv":true,"table":true,"name":"pressure"},
+  "BMP_pres":{"csv":true,"table":false,"name":"pressure"},
   "ax[m/s2]":{"csv":true,"table":false},
   "ay[m/s2]":{"csv":true,"table":false},
   "az[m/s2]":{"csv":true,"table":false},
@@ -166,16 +166,16 @@ const nameToData={
   "altitude":{"data":["altitude"],"unit":"m","labels":{"en":["altitude"],"bg":["Височина"]},"label":{"en":"altitude","bg":"Височина"}},
   "now":{"data":["now[h]"],"unit":"h","labels":{"en":["probe time"],"bg":["Вътрешно време"]},"label":{"en":"probe time","bg":"Вътрешно време"}},
   "time":{"data":["UT[h]"],"unit":"h","labels":{"en":["time"],"bg":["време"]},"label":{"en":"Universal Time","bg":"Универсално време"}},
-  "inside_temperature":{"data":["gtemp[C]"],"unit":"°C","labels":{"en":["temperature"],"bg":["температура"]},"label":{"en":"Inside temperature","bg":"Вътрешна температура"}},
-  "outside_temperature":{"data":["AHT_temp[C]","BMP_temp[C]"],"unit":"°C","labels":{"en":["outside temperature 1","outside temperature 2"],"bg":["Външна температура 1","Външна температура 2"]},"label":{"en":"Outside temperature","bg":"Външна температура"}},
+  "inside_temperature":{"data":["gtemp[C]"],"unit":"°C","labels":{"en":["temperature"],"bg":["температура"]},"label":{"en":"Inside temperature","bg":"Вътрешна температура"},"img":"textures/icons/termometer.png"},
+  "outside_temperature":{"data":["AHT_temp[C]","BMP_temp[C]"],"unit":"°C","labels":{"en":["outside temperature 1","outside temperature 2"],"bg":["Външна температура 1","Външна температура 2"]},"label":{"en":"Outside temperature","bg":"Външна температура"},"img":"textures/icons/termometer.png"},
   "pressure":{"data":["BMP_pres"],"unit":"Pa","labels":{"en":["pressure"],"bg":["Налягане"]},"label":{"en":"pressure","bg":"Налягане"}},
   "humidity":{"data":["AHT_hum"],"unit":"%","labels":{"en":["humidity"],"bg":["Влажност"]},"label":{"en":"humidity","bg":"Влажност"}},
   "PMconc":{"data":["pm1_0","pm2_5","pm10_0"],"unit":"µg/m³","labels":{"en":["pm1_0","pm2_5","pm10_0"],"bg":["pm1_0","pm2_5","pm10_0"]},"label":{"en":"Dist concentration","bg":"Концентрация на прахови частици"}},
   "PMnum":{"data":["p03um","p05um","p10um"],"unit":"n/0.1L","labels":{"en":["p03m","p05m","p10m"],"bg":["p03m","p05m","p10m"]},"label":{"en":"Dist count","bg":"Количество прахови частици"}},
-  "rssi":{"data":["rssi"],"unit":"dbm","labels":{"en":["rssi"],"bg":["rssi"]},"label":{"en":"LoRa rssi","bg":"LoRa rssi"}},
-  "snr":{"data":["snr"],"unit":"dbm","labels":{"en":["snr"],"bg":["snr"]},"label":{"en":"LoRa snr","bg":"LoRa snr"}},
-  "voltage":{"data":["voltage"],"unit":"V","labels":{"en":["volage"],"bg":["Напрежение"]},"label":{"en":"Battery voltage","bg":"Напрежение на батерията"}},
-  "batteryLevel":{"data":["batteryLevel"],"unit":"%","labels":{"en":["charge"],"bg":["Ниво"]},"label":{"en":"Battery level","bg":"Ниво на батерията"}},
+  "rssi":{"data":["rssi"],"unit":"dbm","labels":{"en":["rssi"],"bg":["rssi"]},"label":{"en":"LoRa rssi","bg":"LoRa rssi"},"img":"textures/icons/probe.png"},
+  "snr":{"data":["snr"],"unit":"dbm","labels":{"en":["snr"],"bg":["snr"]},"label":{"en":"LoRa snr","bg":"LoRa snr"},"img":"textures/icons/probe.png"},
+  "voltage":{"data":["voltage"],"unit":"V","labels":{"en":["volage"],"bg":["Напрежение"]},"label":{"en":"Battery voltage","bg":"Напрежение на батерията"},"img":"textures/icons/battery.png"},
+  "batteryLevel":{"data":["batteryLevel"],"unit":"%","labels":{"en":["charge"],"bg":["Ниво"]},"label":{"en":"Battery level","bg":"Ниво на батерията"},"img":"textures/icons/battery.png"},
   "heatingOn":{"data":["heatingon"],"unit":"","labels":{"en":["is on?"],"bg":["Включено"]},"label":{"en":"Heating activation","bg":"Активация на нагревателя"}},
 }
 const form = document.forms[0];
@@ -520,6 +520,8 @@ langSelect.onchange=function(){
           }
     }
     changeData();
+    createTable();
+    fillTable();
 }
 var myChart;
 var font=parseFloat(getComputedStyle(document.body).getPropertyValue('font-size'));
@@ -609,7 +611,8 @@ function createTable(){
   for(let name in allKeys){
     if(allKeys[name]["table"]){
       let label=nameToData[allKeys[name]["name"]]['label'][langSelect.value]
-      let element = "<div class='file'>"+label+":<div style='flex-grow:1;'></div><div  id='"+name+"' style='min-width:5em'></div></div>";
+      
+      let element = "<div class='file'><img class='icon' src="+nameToData[allKeys[name]["name"]]['img']+">&nbsp;<div>"+label+":</div><div style='flex-grow:1;'></div><div  id='"+name+"' style='min-width:5em'></div></div>";
       table.innerHTML=table.innerHTML+element;}}
 }
 

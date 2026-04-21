@@ -175,6 +175,13 @@ image-rendering: high-quality;
         .alt{
             bottom:calc(var(--altBarLength) / var(--maxAlt) * var(--altitude));
         }
+        .anglepannel{
+            display: flex;
+            height: calc(100% - 18em);
+            width: 100%;
+            flex-direction: column;
+            align-items: center;
+        }
         .angle{
             display: inline-block;
             position: relative;
@@ -189,9 +196,9 @@ image-rendering: high-quality;
 	        margin-bottom: -50%;
             margin-right: 50%;
 	        margin-left: -50%; */
+            width: 100%;
             z-index: 3;
-            aspect-ratio: 1;
-            max-height: calc(30vh - 4.33em);
+            flex-grow: 1;
         }
         .angle div{
             position: absolute;
@@ -228,7 +235,7 @@ image-rendering: high-quality;
     }
     .anglecontainer:focus-within{
         transition-duration: 0.5s;
-        width:min(22em,60vw);
+        width:min(20em,60vw)
 
 }
         .map{
@@ -242,7 +249,6 @@ image-rendering: high-quality;
         .window{
             flex-direction: column;
             padding: 2em;
-
             position:fixed;
             top:0;
             left: 0;
@@ -350,9 +356,12 @@ image-rendering: high-quality;
         }
 
         @media (orientation: landscape) {
+            .angle{
+                width: 33% !important;
+                display: inline-block;
+            }
             .anglecontainer{
                 height: calc(100% - 3em);
-
                 bottom: 0;
             }
             .downarrow{
@@ -417,10 +426,7 @@ image-rendering: high-quality;
 
         </div>
     <div class="anglecontainer" tabindex="1">
-
-    <div class="angle"><div style='content: url("textures/graphics/redUp.png");transform: translate(50%,-50%) rotate(calc(var(--yaw) * 1deg));'></div></div>
-    <div class="angle" ><div style='content: url("textures/graphics/redFront.png");transform: translate(50%,-50%) rotate(calc(var(--roll) * 1deg));'></div></div>
-    <div class="angle"><div style='content: url("textures/graphics/redSide.png");transform: translate(50%,-50%) rotate(calc(var(--pitch) * 1deg));'></div></div>
+    <div class = anglepannel><div class="angle"><div style='content: url("textures/graphics/redUp.png");transform: translate(50%,-50%) rotate(calc(var(--yaw) * 1deg));'></div></div><div class="angle" ><div style='content: url("textures/graphics/redFront.png");transform: translate(50%,-50%) rotate(calc(var(--roll) * 1deg));'></div></div><div class="angle"><div style='content: url("textures/graphics/redSide.png");transform: translate(50%,-50%) rotate(calc(var(--pitch) * 1deg));'></div></div></div>
     <div id="table">
         
     </div>
