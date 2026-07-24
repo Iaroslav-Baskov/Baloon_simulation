@@ -16,9 +16,6 @@ aWidth=aHeight*width/height;}else{
   aWidth=maxA;
   aHeight=aWidth/width*height;
 }
-var roll;
-var pitch;
-var yaw;
 var root = document.querySelector(':root');
 var altMarker=document.getElementById('marker');
 const Atm=40000;
@@ -32,20 +29,37 @@ var data={
 }
 
 
-function predictBatteryLevel(voltage,flags){
-  return 100;
+function readFlagAtPosition(flags, bitPosition) {
+  if (flags === undefined || flags === null || isNaN(flags)) return false;
+  return ((flags >> bitPosition) & 1);
+}
+function predictBatteryLevel(voltage,heating_on,cam_on){
+  let data=[-9698.66399801,  9519.97433202, -3117.27831474,   340.44272883];
+  poly=0;
+  for(var i=0;i<data.length;i++){
+    poly+=data[i]*(voltage+heating_on*0.09285857787284524+cam_on*0.06483004946064508)**(i);
+  }
+  return 100 / (1 + Math.exp(-poly));
 }
 function predictSunPosition(utHours, lat, lon, altitude) {
     const rad = Math.PI / 180;
 
+    // Helper to fix JavaScript's negative modulo behavior
+    const normalize = (val) => ((val % 360) + 360) % 360;
+
     // 1. Get current date components to calculate the correct Julian Day
     const now = new Date();
-    const year = now.getUTCFullYear();
-    const month = now.getUTCMonth() + 1; // JS months are 0-11
+    let year = now.getUTCFullYear();
+    let month = now.getUTCMonth() + 1; // JS months are 0-11
     const day = now.getUTCDate();
 
     // 2. Calculate Julian Day (standard astronomical formula)
-    // This converts the current date + your utHours into a continuous day count
+    // CRITICAL FIX: Jan and Feb must be treated as months 13 and 14 of the previous year
+    if (month <= 2) {
+        year -= 1;
+        month += 12;
+    }
+
     const A = Math.floor(year / 100);
     const B = 2 - A + Math.floor(A / 4);
     const JD = Math.floor(365.25 * (year + 4716)) + 
@@ -55,23 +69,24 @@ function predictSunPosition(utHours, lat, lon, altitude) {
     const d = JD - 2451545.0; // Days since J2000.0 epoch
 
     // 3. Solar Coordinates (Position of the sun in space)
-    const g = (357.529 + 0.98560028 * d) % 360; // Mean Anomaly
-    const q = (280.459 + 0.98564736 * d) % 360; // Mean Longitude
-    const L = (q + 1.915 * Math.sin(g * rad) + 0.020 * Math.sin(2 * g * rad)) % 360; // Ecliptic Longitude
+    // CRITICAL FIX: Added proper 0-360 normalization
+    const g = normalize(357.529 + 0.98560028 * d); 
+    const q = normalize(280.459 + 0.98564736 * d); 
+    const L = normalize(q + 1.915 * Math.sin(g * rad) + 0.020 * Math.sin(2 * g * rad)); 
     const e = 23.439 - 0.00000036 * d; // Obliquity of Earth's axis
 
     // 4. Celestial Coordinates (Equatorial system)
-    const ra = Math.atan2(Math.cos(e * rad) * Math.sin(L * rad), Math.cos(L * rad)) / rad;
+    let ra = Math.atan2(Math.cos(e * rad) * Math.sin(L * rad), Math.cos(L * rad)) / rad;
+    ra = normalize(ra); // Ensure Right Ascension is normalized
     const dec = Math.asin(Math.sin(e * rad) * Math.sin(L * rad)) / rad;
 
     // 5. Sidereal Time (Earth's rotation relative to stars)
-    // We use the specific hours provided to find where your longitude is facing
-    const GMST = (280.46061837 + 360.98564736629 * d) % 360;
-    const LMST = GMST + lon;
+    const GMST = normalize(280.46061837 + 360.98564736629 * d);
+    const LMST = normalize(GMST + lon);
     
     let H = LMST - ra; // Hour Angle
-    while (H < -180) H += 360;
-    while (H > 180) H -= 360;
+    // CRITICAL FIX: Replaced 'while' loop with reliable mathematical bound (-180 to 180)
+    H = ((H + 180) % 360 + 360) % 360 - 180;
 
     // 6. Transformation to Horizontal Coordinates (Azimuth/Elevation)
     const latRad = lat * rad;
@@ -84,10 +99,10 @@ function predictSunPosition(utHours, lat, lon, altitude) {
     let azimuth = Math.atan2(-Math.sin(hRad), 
                   Math.cos(latRad) * Math.tan(decRad) - Math.sin(latRad) * Math.cos(hRad)) / rad;
     
-    azimuth = (azimuth + 360) % 360;
+    // CRITICAL FIX: Ensure azimuth is locked neatly into 0-360 degrees
+    azimuth = normalize(azimuth);
 
     // 7. Atmospheric Refraction Correction
-    // Higher altitude = thinner air = less "bending" of light
     const pressureCorrection = Math.exp(-altitude / 8200);
     if (elevation > -0.5) {
         const ref = (1.02 / Math.tan((elevation + 10.3 / (elevation + 5.11)) * rad)) * pressureCorrection;
@@ -100,31 +115,43 @@ function predictSunPosition(utHours, lat, lon, altitude) {
         timestamp: now.getUTCFullYear() + "-" + (now.getUTCMonth() + 1) + "-" + now.getUTCDate()
     };
 }
-
-var secondaryData={
-  "UT[h]":{"sources":["UT[s]"],"formula":(x)=>(x/3600)},
-  "now[h]":{"sources":["now[ms]"],"formula":(x)=>(x/3600/1000)},
-  "batteryLevel":{"sources":["voltage","flags"],"formula":(v,f)=>(predictBatteryLevel(v,f))},
-  "sunX":{"sources":["UT[h]","lat","lon","altitude"],"formula":(UT,lat,lon,alt)=>(predictSunPosition(UT, lat, lon, alt).azimuth/360*aWidth)},
-  "sunY":{"sources":["UT[h]","lat","lon","altitude"],"formula":(UT,lat,lon,alt)=>(height/2-predictSunPosition(UT, lat, lon, alt).elevation/180*aHeight)},
-  "heatingon":{"sources":["flags"],"formula":(f)=>(f&1)}
+function normalizeTo180(angle) {
+    return ((angle + 180) % 360 + 360) % 360 - 180;
 }
+var secondaryData = {
+  "UT[h]": {"sources": ["UT[s]"], "formula": (x) => (x / 3600)},
+  "now[h]": {"sources": ["now[ms]"], "formula": (x) => (x / 3600 / 1000)},
+  "yaw": {"sources": ["magy[uT]", "magx[uT]"], "formula": (y, x) => (Math.atan2(y, x))},
+  "roll": {"sources": ["ay[m/s2]", "az[m/s2]"], "formula": (y, z) => (Math.atan2(-y, z))},
+  "pitch": {"sources": ["ax[m/s2]", "az[m/s2]"], "formula": (x, z) => (Math.atan2(x, z))},
+  "sunX": {"sources": ["UT[h]", "lat", "lon", "altitude","yaw"], "formula": (UT, lat, lon, alt, yaw) => (width/2+normalizeTo180(predictSunPosition(UT, lat, lon, alt).azimuth - yaw/Math.PI*180)/aHeight*height)},
+  "sunY": {"sources": ["UT[h]", "lat", "lon", "altitude"], "formula": (UT, lat, lon, alt) => (height / 2 - normalizeTo180(predictSunPosition(UT, lat, lon, alt).elevation) / aHeight * height)},
+  "heating_on": {"sources": ["flags"], "formula": (f) => readFlagAtPosition(f, 0)},
+  "LoRa_on": {"sources": ["flags"], "formula": (f) => readFlagAtPosition(f, 1)},
+  "GPS_on": {"sources": ["flags"], "formula": (f) => readFlagAtPosition(f, 2)},
+  "SMS_on": {"sources": ["flags"], "formula": (f) => readFlagAtPosition(f, 3)},
+  "SD_on": {"sources": ["flags"], "formula": (f) => readFlagAtPosition(f, 4)},
+  "pms_on": {"sources": ["flags"], "formula": (f) => readFlagAtPosition(f, 5)},
+  "gyro_on": {"sources": ["flags"], "formula": (f) => readFlagAtPosition(f, 6)},
+  "cam_on": {"sources": ["flags"], "formula": (f) => readFlagAtPosition(f, 7)},
+  "batteryLevel": {"sources": ["voltage", "heating_on", "cam_on"], "formula": (v, h, c) => (predictBatteryLevel(v, h, c))},
+};
 var limits={
   "lat":{max:90, min:-90, exceptions:[]},
   "lon":{max:180, min:-180, exceptions:[]},
   "altitude":{max:100000, min:-1000, exceptions:[]},
-  "AHT_temp[C]":{max:60, min:-80, exceptions:[]},
-  "BMP_temp[C]":{max:60, min:-80, exceptions:[]},
-  "gtemp[C]":{max:60, min:-80, exceptions:[]},
-  "voltage":{max:5, min:0, exceptions:[0]},
+  "AHT_temp[C]":{max:90, min:-80, exceptions:[]},
+  "BMP_temp[C]":{max:90, min:-80, exceptions:[]},
+  "gtemp[C]":{max:90, min:-80, exceptions:[]},
+  "voltage":{max:5, min:2, exceptions:[]},
   "AHT_hum":{max:100, min:0, exceptions:[]},
-  "BMP_pres":{max:200000, min:3000, exceptions:[]},
-  "pm1_0":{max:300, min:0, exceptions:[]},
-  "pm10_0":{max:300, min:0, exceptions:[]},
-  "pm2_5":{max:300, min:0, exceptions:[]},
-  "03µm":{max:300, min:0, exceptions:[]},
-  "05µm":{max:300, min:0, exceptions:[]},
-  "10µm":{max:300, min:0, exceptions:[]},
+  "BMP_pres":{max:200000, min:10, exceptions:[]},
+  "pm1_0":{max:3000, min:0, exceptions:[]},
+  "pm10_0":{max:3000, min:0, exceptions:[]},
+  "pm2_5":{max:3000, min:0, exceptions:[]},
+  "03µm":{max:3000, min:0, exceptions:[]},
+  "05µm":{max:3000, min:0, exceptions:[]},
+  "10µm":{max:3000, min:0, exceptions:[]},
 };
 var allKeys={
   "now[h]":{"csv":true,"table":false,"diagrams":true,"name":"now"},
@@ -157,10 +184,20 @@ var allKeys={
   "UT[h]":{"csv":true,"table":false,"name":"time"},
   "malformed":{"csv":true,"table":false},
   "batteryLevel":{"csv":true,"table":true,"name":"batteryLevel"},
-  "heatingon":{"csv":true,"table":false,"name":"heatingOn"},
+  "yaw":{"csv":false,"table":false},
+  "roll":{"csv":false,"table":false},
+  "pitch":{"csv":false,"table":false},
   "sunX":{"csv":false,"table":false},
   "sunY":{"csv":false,"table":false},
   "flags":{"csv":false,"table":false},
+  "heating_on":{"csv":true,"table":true,"bool":true,"name":"heating_on","critical":[1,0]},
+  "cam_on":{"csv":true,"table":true,"bool":true,"name":"cam_on","critical":[1,0]},
+  "LoRa_on":{"csv":true,"table":true,"bool":true,"name":"LoRa_on","critical":[0]},
+  "GPS_on":{"csv":true,"table":true,"bool":true,"name":"GPS_on","critical":[0]},
+  "SMS_on":{"csv":true,"table":true,"bool":true,"name":"SMS_on","critical":[0]},
+  "SD_on":{"csv":true,"table":true,"bool":true,"name":"SD_on","critical":[0]},
+  "pms_on":{"csv":true,"table":true,"bool":true,"name":"pms_on","critical":[0]},
+  "gyro_on":{"csv":true,"table":true,"bool":true,"name":"gyro_on","critical":[0]}
 };
 const nameToData={
   "altitude":{"data":["altitude"],"unit":"m","labels":{"en":["altitude"],"bg":["Височина"]},"label":{"en":"altitude","bg":"Височина"}},
@@ -176,8 +213,18 @@ const nameToData={
   "snr":{"data":["snr"],"unit":"dbm","labels":{"en":["snr"],"bg":["snr"]},"label":{"en":"LoRa snr","bg":"LoRa snr"},"img":"textures/icons/probe.png"},
   "voltage":{"data":["voltage"],"unit":"V","labels":{"en":["volage"],"bg":["Напрежение"]},"label":{"en":"Battery voltage","bg":"Напрежение на батерията"},"img":"textures/icons/battery.png"},
   "batteryLevel":{"data":["batteryLevel"],"unit":"%","labels":{"en":["charge"],"bg":["Ниво"]},"label":{"en":"Battery level","bg":"Ниво на батерията"},"img":"textures/icons/battery.png"},
-  "heatingOn":{"data":["heatingon"],"unit":"","labels":{"en":["is on?"],"bg":["Включено"]},"label":{"en":"Heating activation","bg":"Активация на нагревателя"}},
+  "heating_on":{"data":["heating_on"],"unit":"","labels":{"en":["is on?"],"bg":["Включено?"]},"label":{"en":"Heating activation","bg":"Активация на нагревателя"},"img":"textures/icons/heating.png","noimg":"textures/icons/no_heating.png"},
+  
+  "LoRa_on":{"data":["LoRa_on"],"unit":"","labels":{"en":["is on?"],"bg":["Включено?"]},"label":{"en":"LoRa activation","bg":"Активация на LoRa"},"img":"textures/icons/probe.png","noimg":"textures/icons/no_probe.png"},
+  "GPS_on":{"data":["GPS_on"],"unit":"","labels":{"en":["is on?"],"bg":["Включено?"]},"label":{"en":"GPS activation","bg":"Активация на GPS"},"img":"textures/icons/sat.png","noimg":"textures/icons/no_sat.png"},
+  "SMS_on":{"data":["SMS_on"],"unit":"","labels":{"en":["is on?"],"bg":["Включено?"]},"label":{"en":"SMS module activation","bg":"Активация на SMS модул"},"img":"textures/icons/sms.png","noimg":"textures/icons/no_sms.png"},
+  "SD_on":{"data":["SD_on"],"unit":"","labels":{"en":["is on?"],"bg":["Включено?"]},"label":{"en":"SD activation","bg":"Активация на SD"},"img":"textures/icons/SD.png","noimg":"textures/icons/no_SD.png"},
+  "pms_on":{"data":["pms_on"],"unit":"","labels":{"en":["is on?"],"bg":["Включено?"]},"label":{"en":"PMS sensor activation","bg":"Активация на сензора за прахови частици"},"img":"textures/icons/pms.png","noimg":"textures/icons/no_pms.png"},
+  "gyro_on":{"data":["gyro_on"],"unit":"","labels":{"en":["is on?"],"bg":["Включено?"]},"label":{"en":"Gyro activation","bg":"Активация на жироскопа"},"img":"textures/icons/gyro.png","noimg":"textures/icons/no_gyro.png"},
+  "cam_on":{"data":["cam_on"],"unit":"","labels":{"en":["is on?"],"bg":["Включено"]},"label":{"en":"Camera activation","bg":"Активация на камерата"},"img":"textures/icons/cam.png","noimg":"textures/icons/no_cam.png"}
+
 }
+const dwawWorld_needed_data=["altitude","sunX","sunY","ax[m/s2]","ay[m/s2]","az[m/s2]","magx[uT]","magy[uT]","magz[uT]","roll","pitch","yaw"];
 const form = document.forms[0];
 const radios = form.elements["selectData"];
 const relatedTo = form.elements["relTo"];
@@ -233,11 +280,9 @@ terrain[i]=new Image();
 terrain[i].crossOrigin = "anonymous";
 
 terrain[i].src="./textures/graphics/terrain"+i+".png"}
-var sun={x:width/4,y:0}
 
 var noDataEvent;
 var allData=[
-  {AHT_temp:[]}
 ];
 
 stars=[]
@@ -256,8 +301,8 @@ var csvFileLink=document.getElementById("csvFile");
 csvFileLink.onclick=generateCSV;
 
 async function startData() {
-    const url = "https://aurora.stratostat.com/log.txt";
-
+    //const url = "https://aurora.stratostat.com/log.txt";
+    url = "log.txt";
     try {
         // 1. Fetch with 'no-store' to ensure we don't get a cached 0-byte file
         const response = await fetch(url, { cache: "no-store" });
@@ -290,9 +335,16 @@ async function startData() {
         const json = JSON.parse(cleanedText);
         
         // 4. Data Processing
+        let lastsmth;
         for (const [key, value] of Object.entries(json)) {
+            if(key=="101"){
+              console.log("Data for key 101:", value);
+            }
             loadData(value);
+            lastsmth=value
         }
+        update(data);
+        console.log("Data loaded successfully:", lastsmth);
 
     } catch (err) {
         console.error("Detailed Error:", err);
@@ -341,7 +393,19 @@ function makeNoise(context) {
     }
   }
   function drawWorld(){
-
+    if(!dwawWorld_needed_data.every(key => data.hasOwnProperty(key))) {
+      console.warn("Missing required data for drawWorld:", dwawWorld_needed_data.filter(key => !data.hasOwnProperty(key)));
+      return;
+    }
+    for (const key of dwawWorld_needed_data) {
+      if (data[key] === undefined ) { 
+        console.warn(`Data for ${key} is undefined. Skipping drawWorld.`);
+        return;}
+      if (isNaN(data[key])) {
+        console.warn(`Data for ${key} is NaN. Skipping drawWorld.`);
+        return;
+      }
+    }
     console.log(data);
     horyzont=Math.acos(R/(R+data["altitude"]))/Math.PI*180;
     var horyzontH=Math.floor(horyzont*height/aHeight+height/2);
@@ -355,38 +419,38 @@ function makeNoise(context) {
     skyCtx.drawImage(drawCanvas.canvas, 0, 0);
     ctx.clearRect(0,0,width,height);
     root.style.setProperty('--altitude', data.altitude);
-    root.style.setProperty('--yaw', yaw/Math.PI*180);
-    root.style.setProperty('--roll', roll/Math.PI*180);
-    root.style.setProperty('--pitch', pitch/Math.PI*180);
+    root.style.setProperty('--yaw', data["yaw"]/Math.PI*180-180);
+    root.style.setProperty('--roll', data["roll"]/Math.PI*180);
+    root.style.setProperty('--pitch', data["pitch"]/Math.PI*180);
     var cloudN0=2;
     var cloudN1=5;
     var cloudN2=25;
-    for(var i=0;i<terrain.length;i+=1){
-    var d=dmax*(terrain.length-i)/terrain.length;
-    drawLayer(terrain[i],d,data.altitude,0,0,true);
-    for(j=0;j<cloudN0;j++){
-    d=dmax*(terrain.length-i-j/cloudN0)/terrain.length;
-    var offset = Math.sin((i+j/cloudN0)*2)*0.1;
-    drawLayer(cum,d,data.altitude,cloudAltitude[0],offset);
-  }
-    for(j=0;j<cloudN1;j++){
-    d=dmax*(terrain.length-i-j/cloudN1)/terrain.length;
-    var offset = Math.sin((i+j/cloudN1)/3)/2+Math.sin((i+j/cloudN2)*3*Math.PI)/2;
-    drawLayer(clouds,d,data.altitude,cloudAltitude[1],offset)
-  }
-    for(j=0;j<cloudN2;j++){
-    d=dmax*(terrain.length-i-j/cloudN2)/terrain.length;
-    var offset = Math.sin((i+j/cloudN2)/3)/2+Math.sin((i+j/cloudN2)*cloudN2/8*Math.PI);
-    drawLayer(cur,d,data.altitude,cloudAltitude[2],offset)
-  }
-}
-    drawBox(ctx,boxFront,width/2,height*0.65-1.5*m,0.3*m,roll);
+  //   for(var i=0;i<terrain.length;i+=1){
+  //   var d=dmax*(terrain.length-i)/terrain.length;
+  //   drawLayer(terrain[i],d,data.altitude,0,0,true);
+  //   for(j=0;j<cloudN0;j++){
+  //   d=dmax*(terrain.length-i-j/cloudN0)/terrain.length;
+  //   var offset = Math.sin((i+j/cloudN0)*2)*0.1;
+  //   drawLayer(cum,d,data.altitude,cloudAltitude[0],offset);
+  // }
+  //   for(j=0;j<cloudN1;j++){
+  //   d=dmax*(terrain.length-i-j/cloudN1)/terrain.length;
+  //   var offset = Math.sin((i+j/cloudN1)/3)/2+Math.sin((i+j/cloudN2)*3*Math.PI)/2;
+  //   drawLayer(clouds,d,data.altitude,cloudAltitude[1],offset)
+  // }
+  //   for(j=0;j<cloudN2;j++){
+  //   d=dmax*(terrain.length-i-j/cloudN2)/terrain.length;
+  //   var offset = Math.sin((i+j/cloudN2)/3)/2+Math.sin((i+j/cloudN2)*cloudN2/8*Math.PI);
+  //   drawLayer(cur,d,data.altitude,cloudAltitude[2],offset)
+  // }
+// }
+    // drawBox(ctx,boxFront,width/2,height*0.65-1.5*m,0.3*m,data["roll"]);
 
-    let size=2*m*Math.cbrt(allData["BMP_pres"][0]/data["BMP_pres"]);
-    drawBox(ctx,baloon,width/2,height*0.65-1.5*m,size,roll);
-    ctx.drawImage(fog,0,-cloudAltitude[0]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
-    ctx.drawImage(fog,0,-cloudAltitude[1]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
-  ctx.drawImage(fog,0,-cloudAltitude[2]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
+    // let size=2*m*Math.cbrt(allData["BMP_pres"][0]/data["BMP_pres"]);
+    // drawBox(ctx,baloon,width/2,height*0.65-1.5*m,size,data["roll"]);
+  //   ctx.drawImage(fog,0,-cloudAltitude[0]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
+  //   ctx.drawImage(fog,0,-cloudAltitude[1]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
+  // ctx.drawImage(fog,0,-cloudAltitude[2]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
   
       const sunZ = (1.570796) + ((height / 2.0 -height+ data["sunY"]) / width)* aWidth/180*3.14159265;
 
@@ -450,51 +514,64 @@ terrain[terrain.length-1].onload();
               }, 50);
             },40000);
             
-            yaw=Math.atan2(data["magy[uT]"],data["magx[uT]"])+Math.PI ;
-            roll=Math.atan2(-data["ay[m/s2]"],data["az[m/s2]"]);
-            pitch=Math.atan2(data["ax[m/s2]"],data["az[m/s2]"]);
             drawWorld();
             if(observer!=undefined){
               observerMoved();
             }
             changeData();
-          map.setView([data.lat, data.lon], map.getZoom());
+            if(data.lat!=undefined && data.lon!=undefined){
+            map.setView([data.lat, data.lon], map.getZoom());}
       }
 	}
 radios.onchange=changeData;
 relatedTo.onchange=changeData;
 function changeData() {
-    // 1. Get current selection values
     var metricKey = radios.value;
     var relationKey = relatedTo.value;
 
-    // 2. Guard: Ensure the selected keys exist in our mapping
-
     if (!nameToData.hasOwnProperty(metricKey) || !nameToData.hasOwnProperty(relationKey)) return;
-
 
     var input = [];
     var metricInfo = nameToData[metricKey];
     var relationInfo = nameToData[relationKey];
+    var lang = langSelect.value;
 
-    // 3. Corrected Loop: Use 'of' to get values, not 'in'
-    for (var index in  metricInfo["data"]) {
-      col = metricInfo["data"][index];
-      input.push([]);
-        for(var i=0; i<allData[col].length; i++){
-          input[input.length-1].push({x:allData[relationInfo["data"][0]][i], y:allData[col][i]});
+    for (var m = 0; m < metricInfo["data"].length; m++) {
+      var col = metricInfo["data"][m];
+      // Get metric label (fallback to col key if missing)
+      var metricLabel = (metricInfo["labels"] && metricInfo["labels"][lang] && metricInfo["labels"][lang][m]) 
+                     || (metricInfo["label"] && metricInfo["label"][lang]) 
+                     || col;
+
+      for (var r = 0; r < relationInfo["data"].length; r++) {
+        var relCol = relationInfo["data"][r];
+        // Get relation label (fallback to relCol key if missing)
+        var relationLabel = (relationInfo["labels"] && relationInfo["labels"][lang] && relationInfo["labels"][lang][r]) 
+                         || (relationInfo["label"] && relationInfo["label"][lang]) 
+                         || relCol;
+
+        var points = [];
+        for (var i = 0; i < allData[col].length; i++) {
+          points.push({ x: allData[relCol][i], y: allData[col][i] });
         }
+
+        // Return a structured dataset object containing both data and label
+        input.push({
+          label: metricLabel + ' vs ' + relationLabel,
+          data: points
+        });
+      }
     }
 
-    if(myChart==undefined){
-      drawChart(input,metricInfo["labels"][langSelect.value],relationInfo["label"][langSelect.value],relationInfo["unit"]);
+    if (typeof myChart === "undefined" || myChart === undefined) {
+      drawChart(input, metricInfo["labels"][lang], relationInfo["label"][lang], relationInfo["unit"]);
     }
     updateChart(
         input,
-        metricInfo["labels"][langSelect.value],
-        relationInfo["label"][langSelect.value],
+        metricInfo["labels"][lang],
+        relationInfo["label"][lang],
         relationInfo["unit"],
-        metricInfo["label"][langSelect.value],
+        metricInfo["label"][lang],
         metricInfo["unit"]
     );
 }
@@ -535,91 +612,96 @@ Chart.defaults.font = {
   family: 'Times New Roman, Times, serif',
   weight: 'normal',
 };
-function drawChart(Data,labels,xName,xUnit){
-  var dsets=[];
-  for(var i=0; i<Data.length;i++){
-    dsets.push({
-        pointRadius: 1,
-        label: labels[i],
-        data: Data[i]
-      });
-  }
-  myChart=new Chart("diagramsIm", {
+function drawChart(Data, labels, xName, xUnit) {
+  myChart = new Chart("diagramsIm", {
     type: "scatter",
+    data: {
+      datasets: Data // Data is already array of { label, data } objects!
+    },
     plugins: [{
-              // Custom plugin to force white background
-              id: 'custom_canvas_background_color',
-              beforeDraw: (chart) => {
-                      const {ctx} = chart;
-                      ctx.save();
-                      ctx.globalCompositeOperation = 'destination-over';
-                      ctx.fillStyle = 'white';
-                      ctx.fillRect(0, 0, chart.width, chart.height);
-                      ctx.restore();
-                    }
-          }],
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-              animation: {
-          duration: 0
-      },
+      id: 'custom_canvas_background_color',
+      beforeDraw: (chart) => {
+        const {ctx} = chart;
+        ctx.save();
+        ctx.globalCompositeOperation = 'destination-over';
+        ctx.fillStyle = 'white';
+        ctx.fillRect(0, 0, chart.width, chart.height);
+        ctx.restore();
       }
+    }],
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: {
+        duration: 0
+      },
+      scales: {
+        x: {
+          title: { display: true, text: xName },
+          ticks: { callback: (val) => val + (xUnit || "") }
+        },
+        y: {
+          title: { display: true, text: "", color: "black" },
+          ticks: { callback: (val) => val }
+        }
+      }
+    }
   });
-  updateChart(Data,labels,xName,xUnit)
 }
-function updateChart(Data,labels,xName,xUnit,yName,yUnit){
-var dsets=[];
-for(var i=0; i<Data.length;i++){
 
-  rad=width/Data[i].length/2;
-  if(rad<0.2){
-    rad=0.2;
-  } else if(rad>5){
-    rad=5;
+function updateChart(Data, labels, xName, xUnit, yName, yUnit) {
+  // Dynamically calculate point radius for each dataset
+  for (var i = 0; i < Data.length; i++) {
+    var totalPoints = Data[i].data ? Data[i].data.length : 1;
+    var rad = width / totalPoints / 2;
+    if (rad < 0.2) rad = 0.2;
+    if (rad > 5) rad = 5;
+
+    Data[i].pointRadius = rad;
   }
-  dsets.push({
-      pointRadius: rad,
-      label: labels[i],
-      data: Data[i]
-    });
 
+  // Update chart data & scales
+  myChart.data.datasets = Data;
+
+  if (myChart.options.scales.x) {
+    myChart.options.scales.x.title = { display: true, text: xName || "" };
+    myChart.options.scales.x.ticks = { callback: (value) => value + (xUnit || "") };
+  }
+
+  if (myChart.options.scales.y) {
+    myChart.options.scales.y.title = { display: true, text: yName || "", color: "black" };
+    myChart.options.scales.y.ticks = { callback: (value) => value + (yUnit || "") };
+  }
+
+  myChart.update();
 }
-myChart.data.datasets=dsets;
-myChart.options.scales.x={title:{
-                  display: true,
-                  text: xName,
-                },
-                ticks: {
-                    callback: function(value, index, ticks) {
-                        return value + xUnit;
-                    }
-                }};
-myChart.options.scales.y={title:{
-                  display: true,
-                  text: yName,
-                  color: "black"
-                },
-                ticks: {
-                    callback: function(value, index, ticks) {
-                        return value + yUnit;
-                    }
-                }};
-    myChart.update();}
 function createTable(){
   table.innerHTML="";
   for(let name in allKeys){
-    if(allKeys[name]["table"]){
+    if(allKeys[name]["table"] && !allKeys[name]["bool"]){
       let label=nameToData[allKeys[name]["name"]]['label'][langSelect.value]
       
-      let element = "<div class='file'><img class='icon' src="+nameToData[allKeys[name]["name"]]['img']+">&nbsp;<div>"+label+":</div><div style='flex-grow:1;'></div><div  id='"+name+"' style='min-width:5em'></div></div>";
+      let element = "<div class='file'><img class='icon' src="+nameToData[allKeys[name]["name"]]['img']+"><div>"+label+":</div><div style='flex-grow:1;'></div><div  id='"+name+"' style='min-width:5em'></div></div>";
       table.innerHTML=table.innerHTML+element;}}
+    let element = "<div class='file' id='booleans'> </div>";
+    table.innerHTML=table.innerHTML+element;
 }
 
 function fillTable(){
+  document.getElementById("booleans").innerHTML="";
   for(let name in allKeys){
     if(allKeys[name]["table"]){
-      document.getElementById(name).innerHTML=""+ data[name] + nameToData[allKeys[name]["name"]]['unit']}}}
+      if(allKeys[name]["bool"]){
+        if(allKeys[name]["critical"].includes(data[name])){
+        let src=data[name]==1?nameToData[allKeys[name]["name"]]['img']:nameToData[allKeys[name]["name"]]['noimg'];
+        let element = "<img class='icon' src="+src+" title='"+nameToData[allKeys[name]["name"]]['label'][langSelect.value]+(data[name]==1?":true":":false")+"'>";
+        document.getElementById("booleans").innerHTML=document.getElementById("booleans").innerHTML+element;
+      }}
+      else{
+        document.getElementById(name).innerHTML=""+ Math.floor(data[name]*100)/100 + nameToData[allKeys[name]["name"]]['unit']}
+      }
+    }
+  }
 var windows=[
   document.getElementById("diagrams"),
   document.getElementById("about"),
@@ -711,10 +793,10 @@ function calcSecondaryData(json){
         values.push(undefined);
       }
     }
-    if(values.includes(undefined)){
-      json[key]=undefined;
-    }else{
+    if(!values.includes(undefined)){
       json[key]=secondaryData[key].formula(...values);
+    }else if (data.hasOwnProperty(key)){
+      json[key]=data[key];
     }
   }
   return json;
@@ -723,10 +805,20 @@ function calcSecondaryData(json){
 function loadData(json){
   if(json["malformed"]==0){
         json=filter(json,limits);
-        if (json.hasOwnProperty("lat")) {
-        var latlng = L.latLng(json["lat"], json["lon"]);
-        marker.setLatLng(latlng); 
-        polyline.addLatLng(latlng);}
+        if (json.hasOwnProperty("lat") && json.hasOwnProperty("lon")) {
+          if (json.lat !== undefined && json.lon !== undefined && !isNaN(json.lat) && !isNaN(json.lon)) {
+            var latlng = L.latLng(json["lat"], json["lon"]);
+            marker.setLatLng(latlng);
+            polyline.addLatLng(latlng);}}
+        
+        for(var index in allKeys){
+          if(!json.hasOwnProperty(index)){
+            if(data.hasOwnProperty(index)){
+              json[index]=data[index];
+              allData[index].push(data[index]);
+            }
+          }
+        }
         json=calcSecondaryData(json);
         for(var index in allKeys){
           var key=index;
@@ -736,13 +828,9 @@ function loadData(json){
           if(json.hasOwnProperty(key)){
             value=parseFloat(json[key]);
             data[key]=value;
-            allData[key].push(value);}
-          else{
-            data[key]=undefined;
-            allData[key].push(undefined);
+            allData[key].push(value);
           }
         }
-
         return true;
     }
     return false;
@@ -750,7 +838,6 @@ function loadData(json){
 function filter(json,limits){
   var output={};
   for([parameter,value] of Object.entries(json)){
-
     var ok=true;
     if(limits.hasOwnProperty(parameter)){
       if(limits[parameter].max<value){
@@ -764,35 +851,52 @@ function filter(json,limits){
           ok=false;
         }
       }}
-    
+      if(isNaN(value)){
+        ok=false;
+      }
+      if(value==undefined){
+        ok=false;
+      }
       if(ok==true){
         output[parameter]=value;
       }
   }
   return output;
 }
-function generateCSV(){
+function generateCSV() {
   var csvContent = ""; 
-  for(key of allKeys){
-    csvContent+=key+",";
+  
+  // 1. Filter keys where "csv" is true
+  var csvKeys = Object.keys(allKeys).filter(key => allKeys[key]["csv"] === true);
+
+  // 2. Build CSV Headers
+  for (var i = 0; i < csvKeys.length; i++) {
+    csvContent += csvKeys[i] + (i < csvKeys.length - 1 ? "," : "");
   }
-  csvContent+="\n";
-    for(var i=0;i<allData[allKeys[0]].length;i++){
-      for(key of allKeys){
-        csvContent+=allData[key][i]+",";
-      }
-      csvContent+="\n";
+  csvContent += "\n";
+
+  // 3. Determine total row count based on the first valid dataset array
+  var rowCount = allData[csvKeys[0]] ? allData[csvKeys[0]].length : 0;
+
+  // 4. Build CSV Data Rows
+  for (var i = 0; i < rowCount; i++) {
+    for (var j = 0; j < csvKeys.length; j++) {
+      var key = csvKeys[j];
+      var val = (allData[key] && allData[key][i] !== undefined) ? allData[key][i] : "";
+      csvContent += val + (j < csvKeys.length - 1 ? "," : "");
     }
-    csvUrl = URL.createObjectURL(new Blob([csvContent], { type: "text/csv;charset=utf-8;",}));
-const link = document.createElement("a");
-link.href = csvUrl;
-link.setAttribute("download", "stratostat_data.csv"); // Set the filename
+    csvContent += "\n";
+  }
 
-// 4. Append to body, click it, and remove it
-document.body.appendChild(link);
-link.click();
-document.body.removeChild(link);
+  // 5. Trigger Browser Download
+  var csvUrl = URL.createObjectURL(new Blob([csvContent], { type: "text/csv;charset=utf-8;" }));
+  const link = document.createElement("a");
+  link.href = csvUrl;
+  link.setAttribute("download", "stratostat_data.csv");
+  
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
 
-// 5. Clean up the URL to free up memory
-URL.revokeObjectURL(csvUrl);
+  URL.revokeObjectURL(csvUrl);
 }
