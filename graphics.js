@@ -301,8 +301,8 @@ var csvFileLink=document.getElementById("csvFile");
 csvFileLink.onclick=generateCSV;
 
 async function startData() {
-    //const url = "https://aurora.stratostat.com/log.txt";
-    url = "log.txt";
+    const url = "https://aurora.stratostat.com/log.txt";
+
     try {
         // 1. Fetch with 'no-store' to ensure we don't get a cached 0-byte file
         const response = await fetch(url, { cache: "no-store" });
