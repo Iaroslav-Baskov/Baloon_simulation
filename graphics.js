@@ -213,15 +213,15 @@ const nameToData={
   "snr":{"data":["snr"],"unit":"dbm","labels":{"en":["snr"],"bg":["snr"]},"label":{"en":"LoRa snr","bg":"LoRa snr"},"img":"textures/icons/probe.png"},
   "voltage":{"data":["voltage"],"unit":"V","labels":{"en":["volage"],"bg":["Напрежение"]},"label":{"en":"Battery voltage","bg":"Напрежение на батерията"},"img":"textures/icons/battery.png"},
   "batteryLevel":{"data":["batteryLevel"],"unit":"%","labels":{"en":["charge"],"bg":["Ниво"]},"label":{"en":"Battery level","bg":"Ниво на батерията"},"img":"textures/icons/battery.png"},
-  "heating_on":{"data":["heating_on"],"unit":"","labels":{"en":["is on?"],"bg":["Включено?"]},"label":{"en":"Heating activation","bg":"Активация на нагревателя"},"img":"textures/icons/heating.png","noimg":"textures/icons/no_heating.png"},
+  "heating_on":{"data":["heating_on"],"unit":"","labels":{"en":["is on?"],"bg":["Включено?"]},"label":{"en":"Heating activation","bg":"Нагревател"},"img":"textures/icons/heating.png","noimg":"textures/icons/no_heating.png"},
   
-  "LoRa_on":{"data":["LoRa_on"],"unit":"","labels":{"en":["is on?"],"bg":["Включено?"]},"label":{"en":"LoRa activation","bg":"Активация на LoRa"},"img":"textures/icons/probe.png","noimg":"textures/icons/no_probe.png"},
-  "GPS_on":{"data":["GPS_on"],"unit":"","labels":{"en":["is on?"],"bg":["Включено?"]},"label":{"en":"GPS activation","bg":"Активация на GPS"},"img":"textures/icons/sat.png","noimg":"textures/icons/no_sat.png"},
-  "SMS_on":{"data":["SMS_on"],"unit":"","labels":{"en":["is on?"],"bg":["Включено?"]},"label":{"en":"SMS module activation","bg":"Активация на SMS модул"},"img":"textures/icons/sms.png","noimg":"textures/icons/no_sms.png"},
-  "SD_on":{"data":["SD_on"],"unit":"","labels":{"en":["is on?"],"bg":["Включено?"]},"label":{"en":"SD activation","bg":"Активация на SD"},"img":"textures/icons/SD.png","noimg":"textures/icons/no_SD.png"},
-  "pms_on":{"data":["pms_on"],"unit":"","labels":{"en":["is on?"],"bg":["Включено?"]},"label":{"en":"PMS sensor activation","bg":"Активация на сензора за прахови частици"},"img":"textures/icons/pms.png","noimg":"textures/icons/no_pms.png"},
-  "gyro_on":{"data":["gyro_on"],"unit":"","labels":{"en":["is on?"],"bg":["Включено?"]},"label":{"en":"Gyro activation","bg":"Активация на жироскопа"},"img":"textures/icons/gyro.png","noimg":"textures/icons/no_gyro.png"},
-  "cam_on":{"data":["cam_on"],"unit":"","labels":{"en":["is on?"],"bg":["Включено"]},"label":{"en":"Camera activation","bg":"Активация на камерата"},"img":"textures/icons/cam.png","noimg":"textures/icons/no_cam.png"}
+  "LoRa_on":{"data":["LoRa_on"],"unit":"","labels":{"en":["is on?"],"bg":["Включено?"]},"label":{"en":"LoRa activation","bg":"LoRa"},"img":"textures/icons/probe.png","noimg":"textures/icons/no_probe.png"},
+  "GPS_on":{"data":["GPS_on"],"unit":"","labels":{"en":["is on?"],"bg":["Включено?"]},"label":{"en":"GPS activation","bg":"GPS"},"img":"textures/icons/sat.png","noimg":"textures/icons/no_sat.png"},
+  "SMS_on":{"data":["SMS_on"],"unit":"","labels":{"en":["is on?"],"bg":["Включено?"]},"label":{"en":"SMS module activation","bg":"SMS модул"},"img":"textures/icons/sms.png","noimg":"textures/icons/no_sms.png"},
+  "SD_on":{"data":["SD_on"],"unit":"","labels":{"en":["is on?"],"bg":["Включено?"]},"label":{"en":"SD activation","bg":"SD"},"img":"textures/icons/SD.png","noimg":"textures/icons/no_SD.png"},
+  "pms_on":{"data":["pms_on"],"unit":"","labels":{"en":["is on?"],"bg":["Включено?"]},"label":{"en":"PMS sensor activation","bg":"Сензор за прахови частици"},"img":"textures/icons/pms.png","noimg":"textures/icons/no_pms.png"},
+  "gyro_on":{"data":["gyro_on"],"unit":"","labels":{"en":["is on?"],"bg":["Включено?"]},"label":{"en":"Gyro activation","bg":"Жироскоп"},"img":"textures/icons/gyro.png","noimg":"textures/icons/no_gyro.png"},
+  "cam_on":{"data":["cam_on"],"unit":"","labels":{"en":["is on?"],"bg":["Включено"]},"label":{"en":"Camera activation","bg":"Камера"},"img":"textures/icons/cam.png","noimg":"textures/icons/no_cam.png"}
 
 }
 const dwawWorld_needed_data=["altitude","sunX","sunY","ax[m/s2]","ay[m/s2]","az[m/s2]","magx[uT]","magy[uT]","magz[uT]","roll","pitch","yaw"];
@@ -301,8 +301,8 @@ var csvFileLink=document.getElementById("csvFile");
 csvFileLink.onclick=generateCSV;
 
 async function startData() {
-    const url = "https://aurora.stratostat.com/log.txt";
-
+    //const url = "https://aurora.stratostat.com/log.txt";
+    url = "log.txt";
     try {
         // 1. Fetch with 'no-store' to ensure we don't get a cached 0-byte file
         const response = await fetch(url, { cache: "no-store" });
@@ -425,32 +425,32 @@ function makeNoise(context) {
     var cloudN0=2;
     var cloudN1=5;
     var cloudN2=25;
-  //   for(var i=0;i<terrain.length;i+=1){
-  //   var d=dmax*(terrain.length-i)/terrain.length;
-  //   drawLayer(terrain[i],d,data.altitude,0,0,true);
-  //   for(j=0;j<cloudN0;j++){
-  //   d=dmax*(terrain.length-i-j/cloudN0)/terrain.length;
-  //   var offset = Math.sin((i+j/cloudN0)*2)*0.1;
-  //   drawLayer(cum,d,data.altitude,cloudAltitude[0],offset);
-  // }
-  //   for(j=0;j<cloudN1;j++){
-  //   d=dmax*(terrain.length-i-j/cloudN1)/terrain.length;
-  //   var offset = Math.sin((i+j/cloudN1)/3)/2+Math.sin((i+j/cloudN2)*3*Math.PI)/2;
-  //   drawLayer(clouds,d,data.altitude,cloudAltitude[1],offset)
-  // }
-  //   for(j=0;j<cloudN2;j++){
-  //   d=dmax*(terrain.length-i-j/cloudN2)/terrain.length;
-  //   var offset = Math.sin((i+j/cloudN2)/3)/2+Math.sin((i+j/cloudN2)*cloudN2/8*Math.PI);
-  //   drawLayer(cur,d,data.altitude,cloudAltitude[2],offset)
-  // }
-// }
-    // drawBox(ctx,boxFront,width/2,height*0.65-1.5*m,0.3*m,data["roll"]);
+    for(var i=0;i<terrain.length;i+=1){
+    var d=dmax*(terrain.length-i)/terrain.length;
+    drawLayer(terrain[i],d,data.altitude,0,0,true);
+    for(j=0;j<cloudN0;j++){
+    d=dmax*(terrain.length-i-j/cloudN0)/terrain.length;
+    var offset = Math.sin((i+j/cloudN0)*2)*0.1;
+    drawLayer(cum,d,data.altitude,cloudAltitude[0],offset);
+  }
+    for(j=0;j<cloudN1;j++){
+    d=dmax*(terrain.length-i-j/cloudN1)/terrain.length;
+    var offset = Math.sin((i+j/cloudN1)/3)/2+Math.sin((i+j/cloudN2)*3*Math.PI)/2;
+    drawLayer(clouds,d,data.altitude,cloudAltitude[1],offset)
+  }
+    for(j=0;j<cloudN2;j++){
+    d=dmax*(terrain.length-i-j/cloudN2)/terrain.length;
+    var offset = Math.sin((i+j/cloudN2)/3)/2+Math.sin((i+j/cloudN2)*cloudN2/8*Math.PI);
+    drawLayer(cur,d,data.altitude,cloudAltitude[2],offset)
+  }
+}
+    drawBox(ctx,boxFront,width/2,height*0.65-1.5*m,0.3*m,data["roll"]);
 
-    // let size=2*m*Math.cbrt(allData["BMP_pres"][0]/data["BMP_pres"]);
-    // drawBox(ctx,baloon,width/2,height*0.65-1.5*m,size,data["roll"]);
-  //   ctx.drawImage(fog,0,-cloudAltitude[0]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
-  //   ctx.drawImage(fog,0,-cloudAltitude[1]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
-  // ctx.drawImage(fog,0,-cloudAltitude[2]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
+    let size=2*m*Math.cbrt(allData["BMP_pres"][0]/data["BMP_pres"]);
+    drawBox(ctx,baloon,width/2,height*0.65-1.5*m,size,data["roll"]);
+    ctx.drawImage(fog,0,-cloudAltitude[0]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
+    ctx.drawImage(fog,0,-cloudAltitude[1]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
+  ctx.drawImage(fog,0,-cloudAltitude[2]*m+data.altitude*m-cloudThickness/2,cloudThickness*m/clouds.height*clouds.width,cloudThickness*m);
   
       const sunZ = (1.570796) + ((height / 2.0 -height+ data["sunY"]) / width)* aWidth/180*3.14159265;
 
@@ -694,7 +694,7 @@ function fillTable(){
       if(allKeys[name]["bool"]){
         if(allKeys[name]["critical"].includes(data[name])){
         let src=data[name]==1?nameToData[allKeys[name]["name"]]['img']:nameToData[allKeys[name]["name"]]['noimg'];
-        let element = "<img class='icon' src="+src+" title='"+nameToData[allKeys[name]["name"]]['label'][langSelect.value]+(data[name]==1?":true":":false")+"'>";
+        let element = "<img class='icon' src="+src+" title='"+nameToData[allKeys[name]["name"]]['label'][langSelect.value]+(data[name]==1?": on":": off")+"'>";
         document.getElementById("booleans").innerHTML=document.getElementById("booleans").innerHTML+element;
       }}
       else{
